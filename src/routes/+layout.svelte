@@ -1,10 +1,12 @@
 <script>
   import "./styles.css";
   import NowPlayingBar from "./NowPlayingBar.svelte";
-  import { onMount } from "svelte";
+  import { currentPlaying } from "./stores";
 </script>
 
 <body>
   <slot />
-  <NowPlayingBar />
+  {#if $currentPlaying.song !== "none"}
+    <NowPlayingBar />
+  {/if}
 </body>

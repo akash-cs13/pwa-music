@@ -70,17 +70,6 @@ body {
   flex-direction: column;
 }
 
-.minimise {
-  display: block;
-  position: fixed;
-  height: 103px;
-  width: 100%;
-  bottom: 0px;
-  right: 25%;
-  padding: 5.5px 10px;
-  border-radius: 25px 0px 0px 0px;
-}
-
 .effect {
   position: fixed;
   height: 103px;
@@ -94,7 +83,7 @@ body {
   padding: 5.5px 10px;
 }
 
-.NowPlaying {
+#musicOverlay.nowPlaying {
   position: fixed;
   height: 103px;
   width: calc(100vw - 20px);
@@ -108,21 +97,31 @@ body {
   align-items: center;
   gap: 10px;
   transition: 0.2s ease;
+  z-index: 5;
 }
 
-#currentpadding {
+#musicOverlay.nowPlaying div:nth-child(1) {
+  display: block;
+  position: fixed;
+  height: 103px;
+  width: 100%;
+  bottom: 0px;
+  right: 25%;
+  padding: 5.5px 10px;
+  border-radius: 25px 0px 0px 0px;
+}
+#musicOverlay.nowPlaying div:nth-child(1) button {
   display: none;
 }
 
-#currentLyrics {
-  display: none;
+#musicOverlay.nowPlaying img:nth-child(2) {
+  width: 85px;
+  height: 85px;
+  filter: drop-shadow(0px 6px 20px rgba(0, 0, 0, 0.15));
+  border-radius: 25px;
 }
 
-#currentProgress {
-  display: none;
-}
-
-#currentInfo {
+#musicOverlay.nowPlaying div:nth-child(3) {
   display: flex;
   width: 100%;
   height: 100%;
@@ -131,33 +130,19 @@ body {
   justify-content: center;
 }
 
-#currentAlbumImage {
-  width: 85px;
-  height: 85px;
-  filter: drop-shadow(0px 6px 20px rgba(0, 0, 0, 0.15));
-  border-radius: 25px;
-}
-
-#currentSong {
-  font-size: 24px;
-  font-weight: 700;
-}
-
-#currentArtist {
-  font-weight: 500;
-  font-size: 16px;
-  color: var(--textColor3);
-}
-
-#pausePlay {
-  z-index: 5;
-}
-
-.moreControls {
+#musicOverlay.nowPlaying div:nth-child(4) {
   display: none;
 }
 
-.AfterClick {
+#musicOverlay.nowPlaying div:nth-child(5) {
+  display: none;
+}
+
+#musicOverlay.nowPlaying div:nth-child(6) .moreControls {
+  display: none;
+}
+
+#musicOverlay.fullScreen {
   position: fixed;
   height: 100%;
   width: 100vw;
@@ -170,23 +155,20 @@ body {
   gap: 10px;
   align-items: center;
   transition: 0.2s ease;
-  z-index: 1;
+  z-index: 10;
+  overflow-y: hidden;
 }
 
-.moreControls.fullsize {
-  display: block;
-}
-
-#currentpadding.fullsize {
+#musicOverlay.fullScreen div:nth-child(1) {
   display: block;
   justify-self: left;
   padding-left: 5%;
 }
-.minimize_button {
+#musicOverlay.fullScreen div:nth-child(1) button {
   padding-left: 5%;
 }
 
-#currentAlbumImage.fullsize {
+#musicOverlay.fullScreen img:nth-child(2) {
   width: 90%;
   height: auto;
   border-radius: 25px;
@@ -194,7 +176,7 @@ body {
   align-self: flex-end;
 }
 
-#currentInfo.fullsize {
+#musicOverlay.fullScreen div:nth-child(3) {
   display: flex;
   width: 100%;
   height: 100%;
@@ -203,37 +185,11 @@ body {
   justify-content: center;
 }
 
-#currentSong.fullsize {
-  font-size: 24px;
-  font-weight: 700;
-  padding-left: 8%;
+#musicOverlay.fullScreen div:nth-child(3) p {
+  padding: 0px 7%;
 }
 
-#currentArtist.fullsize {
-  font-weight: 500;
-  font-size: 16px;
-  padding-left: 8%;
-  color: var(--textColor3);
-}
-
-#currentProgress.fullsize {
-  display: grid;
-  grid-template-rows: 1fr 1fr;
-  width: 90%;
-}
-.slidertime {
-  display: flex;
-  justify-content: space-between;
-}
-
-#currentControls.fullsize {
-  width: 90%;
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  align-self: flex-start;
-}
-
-#currentLyrics.fullsize {
+#musicOverlay.fullScreen div:nth-child(4) {
   width: 90%;
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.1);
@@ -247,6 +203,35 @@ body {
   flex-direction: row;
 }
 
+#musicOverlay.fullScreen div:nth-child(4) .Lines {
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 163%;
+  color: #d7d7d7;
+  color: rgba(180, 180, 180, 0.35);
+}
+
+#musicOverlay.fullScreen div:nth-child(5) {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  width: 90%;
+}
+#musicOverlay.fullScreen div:nth-child(5) .slidertime {
+  display: flex;
+  justify-content: space-between;
+}
+
+#musicOverlay.fullScreen div:nth-child(6) {
+  width: 90%;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  align-self: flex-start;
+}
+
+#musicOverlay.fullScreen div:nth-child(6) .moreControls {
+  display: block;
+}
+
 .Lines {
   font-weight: 600;
   font-size: 20px;
@@ -255,7 +240,27 @@ body {
   color: rgba(180, 180, 180, 0.35);
 }
 
-.AfterClick.lyricsResize {
+.lyricsLabel {
+  padding-left: 3%;
+  width: 100%;
+  height: 32px;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--TextColor);
+}
+
+#song {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+#artist {
+  font-weight: 500;
+  font-size: 16px;
+  color: var(--textColor3);
+}
+
+#musicOverlay.fullScreen.lyricsResize {
   grid-template-rows: 72px 1.5fr 3fr 0.7fr 0.7fr 1fr;
   grid-template-columns: calc(125px + 10%) auto;
   justify-items: center;
@@ -263,11 +268,11 @@ body {
   align-items: center;
 }
 
-#currentpadding.fullsize.lyricsResize {
+#musicOverlay.fullScreen.lyricsResize div:nth-child(1) {
   grid-column: 1 / span 2;
 }
 
-#currentAlbumImage.fullsize.lyricsResize {
+#musicOverlay.fullScreen.lyricsResize img:nth-child(2) {
   width: 125px;
   height: 125px;
   padding: 0px;
@@ -276,7 +281,7 @@ body {
   align-self: center;
 }
 
-#currentInfo.fullsize.lyricsResize {
+#musicOverlay.fullScreen.lyricsResize div:nth-child(3) {
   display: flex;
   width: 100%;
   height: 100%;
@@ -285,28 +290,7 @@ body {
   justify-content: center;
 }
 
-#currentSong.fullsize.lyricsResize {
-  font-size: 24px;
-  padding: 0px;
-  font-weight: 700;
-}
-
-#currentArtist.fullsize.lyricsResize {
-  font-weight: 500;
-  padding: 0px;
-  font-size: 16px;
-
-  color: var(--textColor3);
-}
-
-#currentProgress.fullsize.lyricsResize {
-  grid-column: 1 / span 2;
-}
-#currentControls.lyricsResize {
-  grid-column: 1 / span 2;
-}
-
-#currentLyrics.fullsize.lyricsResize {
+#musicOverlay.fullScreen.lyricsResize div:nth-child(4) {
   grid-column: 1 / span 2;
   grid-row: 3 / 5;
   width: 90%;
@@ -323,13 +307,11 @@ body {
   flex-direction: row;
 }
 
-#lyricsLabel {
-  padding-left: 3%;
-  width: 100%;
-  height: 32px;
-  font-weight: 600;
-  font-size: 14px;
-  color: var(--TextColor);
+#musicOverlay.fullScreen.lyricsResize div:nth-child(5) {
+  grid-column: 1 / span 2;
+}
+#musicOverlay.fullScreen.lyricsResize div:nth-child(6) {
+  grid-column: 1 / span 2;
 }
 
 .addSongClass2 {

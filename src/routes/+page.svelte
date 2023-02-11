@@ -2,23 +2,11 @@
   import "./styles.css";
   import MusicListcard from "./MusicListcard.svelte";
   import circle_plus from "$lib/svg/circle-plus-solid.svg";
-  import album_art from "$lib/album/album.jpg";
-  import { initializeApp } from "firebase/app";
+  import album_art from "$lib/album/album.png";
   import { getFirestore, collection, getDocs } from "firebase/firestore";
   import { onMount } from "svelte";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyDLOcgayXHtMcmDfWwS-2YZ0EqDDUWzSy8",
-    authDomain: "pwa-music-fced1.firebaseapp.com",
-    projectId: "pwa-music-fced1",
-    storageBucket: "pwa-music-fced1.appspot.com",
-    messagingSenderId: "1008965709525",
-    appId: "1:1008965709525:web:417ad9b2e2c70122237c5c",
-    measurementId: "G-1R0SFL17XC",
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+  import { app } from "./stores";
+  import { initializeApp } from "firebase/app";
 
   interface mydata {
     audio: string;
@@ -29,18 +17,21 @@
   }
   let songs: mydata[] = [];
   onMount(async () => {
+    const temp: mydata[] = [];
+
+    const db = getFirestore($app);
+
     const querySnapshot = await getDocs(collection(db, "Music"));
-    querySnapshot.forEach((doc) => {
-      songs.push({
+    querySnapshot.forEach(async (doc) => {
+      temp.push({
         audio: doc.data().audio,
         artist: doc.data().artist,
         image: doc.data().image,
         song: doc.data().song,
-        lyrics: doc.data().lyrics,
+        lyrics: doc.data().image,
       });
     });
-    //getting output sucessfully
-    console.log(songs);
+    songs = await temp;
   });
 </script>
 
@@ -57,11 +48,12 @@
   >
 </div>
 
-<div class="List">
+<div class="List" id="musicList">
   {#each songs as song}
-    <MusicListcard song={song.song} artist={song.artist} image={album_art} />
+    <MusicListcard {song} />
   {:else}
     <p>Loading....</p>
   {/each}
+
   <div style="height: 115px;" />
 </div>

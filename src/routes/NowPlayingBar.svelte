@@ -3,15 +3,17 @@
   import play_song from "$lib/svg/play-song.svg";
   import pause_song from "$lib/svg/pause-song.svg";
   import minimize_button from "$lib/svg/minimize-button.svg";
-  import album_art from "$lib/album/album.jpg";
+  import album_art from "$lib/album/album.png";
   import backwards_btn from "$lib/svg/backwards-button.svg";
   import forwards_btn from "$lib/svg/fordward-button.svg";
   import shuffle_btn from "$lib/svg/Shuffle.svg";
   import repeat_btn from "$lib/svg/Repeat.svg";
   import { onMount } from "svelte";
+  import { app, currentPlaying } from "./stores";
+  import { getStorage, ref, getDownloadURL } from "firebase/storage";
 
   let changingButton = play_song;
-  let seeking;
+  const storage = getStorage($app);
 
   const audio = {
     play: true,
@@ -45,81 +47,25 @@
     ret += "" + secs;
     return ret;
   }
-  let buffers;
 
-  onMount(() => {
-    const nowPlayingBar = document.getElementById("myID");
-    const miniButton = document.getElementById("currentpadding");
-    const toggle_bar = document.getElementById("minimise");
-
-    toggle_bar?.addEventListener("click", () => {
-      toggle_bar?.classList.add("fullsize");
-      nowPlayingBar?.classList.add("AfterClick");
-      nowPlayingBar?.classList.remove("NowPlaying");
-      document.getElementById("currentAlbumImage")?.classList.add("fullsize");
-      document.getElementById("currentSong")?.classList.add("fullsize");
-      document.getElementById("currentArtist")?.classList.add("fullsize");
-      document.getElementById("currentLyrics")?.classList.add("fullsize");
-      document.getElementById("currentProgress")?.classList.add("fullsize");
-      document.getElementById("currentpadding")?.classList.add("fullsize");
-      document.getElementById("currentControls")?.classList.add("fullsize");
-      document.getElementById("shuffleControl")?.classList.add("fullsize");
-      document.getElementById("backControl")?.classList.add("fullsize");
-      document.getElementById("forwardControl")?.classList.add("fullsize");
-      document.getElementById("repeatControl")?.classList.add("fullsize");
-      miniButton?.classList.add("toggle");
+  onMount(async () => {
+    document.getElementById("minimizeArea")?.addEventListener("click", () => {
+      document.getElementById("musicOverlay")?.classList.toggle("fullScreen");
+      document.getElementById("musicOverlay")?.classList.toggle("nowPlaying");
     });
-
-    miniButton?.addEventListener("click", () => {
-      miniButton?.classList.remove("toggle");
-      nowPlayingBar?.classList.remove("AfterClick");
-      document
-        .getElementById("currentAlbumImage")
-        ?.classList.remove("fullsize");
-      document.getElementById("currentSong")?.classList.remove("fullsize");
-      document.getElementById("currentArtist")?.classList.remove("fullsize");
-      document.getElementById("currentLyrics")?.classList.remove("fullsize");
-      document.getElementById("currentProgress")?.classList.remove("fullsize");
-      document.getElementById("currentpadding")?.classList.remove("fullsize");
-      document.getElementById("currentControls")?.classList.remove("fullsize");
-      document.getElementById("shuffleControl")?.classList.remove("fullsize");
-      document.getElementById("backControl")?.classList.remove("fullsize");
-      document.getElementById("forwardControl")?.classList.remove("fullsize");
-      document.getElementById("repeatControl")?.classList.remove("fullsize");
-      nowPlayingBar?.classList.add("NowPlaying");
-    });
-
-    const lyrics = document.getElementById("lyricsLabel");
-    lyrics?.addEventListener("click", () => {
-      nowPlayingBar?.classList.toggle("lyricsResize");
-      document
-        .getElementById("currentAlbumImage")
-        ?.classList.toggle("lyricsResize");
-      document.getElementById("currentSong")?.classList.toggle("lyricsResize");
-      document
-        .getElementById("currentArtist")
-        ?.classList.toggle("lyricsResize");
-      document
-        .getElementById("currentpadding")
-        ?.classList.toggle("lyricsResize");
-      document
-        .getElementById("currentControls")
-        ?.classList.toggle("lyricsResize");
-      document
-        .getElementById("currentProgress")
-        ?.classList.toggle("lyricsResize");
-      document.getElementById("currentInfo")?.classList.toggle("lyricsResize");
-      document
-        .getElementById("currentLyrics")
-        ?.classList.toggle("lyricsResize");
+    document.getElementById("lyrics")?.addEventListener("click", () => {
+      document.getElementById("musicOverlay")?.classList.toggle("lyricsResize");
     });
   });
+
+  export const prerender = false;
+  export const ssr = false;
 </script>
 
 <div class="effect" />
-<div class="NowPlaying" id="myID">
-  <div id="currentpadding">
-    <button id="minimize_button" class="minimize_button">
+<div class="nowPlaying" id="musicOverlay">
+  <div id="minimizeArea">
+    <button>
       <img
         src={minimize_button}
         alt=""
@@ -128,18 +74,19 @@
       />
     </button>
   </div>
-  <img src={album_art} id="currentAlbumImage" alt="" srcset="" />
 
-  <div id="currentInfo">
-    <p id="currentSong">EL Diablo</p>
-    <p id="currentArtist">Art</p>
+  <img src={album_art} id="albumImage" alt="" srcset="" />
+
+  <div>
+    <p id="song">{$currentPlaying.song}</p>
+    <p id="artist">{$currentPlaying.artist}</p>
   </div>
 
-  <div id="currentLyrics">
-    <p id="lyricsLabel" class="Label">Lyrics</p>
+  <div id="lyrics">
+    <p class="lyricsLabel">Lyrics</p>
   </div>
 
-  <div id="currentProgress">
+  <div>
     <input
       type="range"
       step="0.01"
@@ -155,7 +102,7 @@
     </div>
   </div>
 
-  <div id="currentControls">
+  <div>
     <button id="shuffleControl" class="moreControls"
       ><img src={shuffle_btn} alt="" srcset="" /></button
     >
@@ -165,7 +112,6 @@
     <button
       id="pausePlay"
       on:click={() => {
-        console.log(audio.currentTime, audio.totalDuration, buffers);
         playPause();
       }}
     >
@@ -179,15 +125,15 @@
     >
   </div>
 </div>
-<div id="minimise" class="minimise" />
+<!--<div id="minimise" class="minimise" />-->
 <audio
-  src="https://vkbkt.org/fldr_spiritual/Shuklaam.mp4"
+  id="audio"
   bind:paused={audio.play}
   bind:currentTime={audio.currentTime}
   bind:duration={audio.totalDuration}
-  bind:buffered={buffers}
-  bind:seeking
+  bind:seeking={audio.seeking}
   on:ended={() => {
     console.log("audio has ended");
+    playPause();
   }}
 />
