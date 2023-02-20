@@ -5,8 +5,8 @@
   import album_art from "$lib/album/album.png";
   import { getFirestore, collection, getDocs } from "firebase/firestore";
   import { onMount } from "svelte";
-  import { app } from "./stores";
-  import { initializeApp } from "firebase/app";
+  import { app, songs } from "./stores";
+  import { getStorage, ref, getDownloadURL } from "firebase/storage";
 
   interface mydata {
     audio: string;
@@ -14,24 +14,45 @@
     image: string;
     song: string;
     lyrics: string;
+    id: number;
   }
-  let songs: mydata[] = [];
-  onMount(async () => {
-    const temp: mydata[] = [];
 
+  async function MyData() {
     const db = getFirestore($app);
+    const storage = getStorage($app);
 
     const querySnapshot = await getDocs(collection(db, "Music"));
+
+    let temp: mydata[] = [];
+    let count = 0;
     querySnapshot.forEach(async (doc) => {
+      if (parseInt(doc.id) > count) {
+        count = parseInt(doc.id);
+      }
       temp.push({
         audio: doc.data().audio,
         artist: doc.data().artist,
         image: doc.data().image,
         song: doc.data().song,
-        lyrics: doc.data().image,
+        lyrics: doc.data().lyrics,
+        id: parseInt(doc.id),
       });
     });
-    songs = await temp;
+    const temp2 = await temp;
+
+    for (const element of temp2) {
+      const imageURL = await getDownloadURL(ref(storage, element.image));
+      const audioURL = await getDownloadURL(ref(storage, element.audio));
+      element.image = imageURL;
+      element.audio = audioURL;
+    }
+    return { totalSongs: count, songs: temp2 };
+  }
+
+  onMount(async () => {
+    if ($songs.totalSongs == 0) {
+      $songs = await MyData();
+    }
   });
 </script>
 
@@ -49,10 +70,19 @@
 </div>
 
 <div class="List" id="musicList">
-  {#each songs as song}
+  {#each $songs.songs as song}
     <MusicListcard {song} />
   {:else}
-    <p>Loading....</p>
+    {#each Array(7) as _}
+      <div class="shimmer">
+        <div class="albumArt shine" />
+        <div>
+          <div class="songName shine" />
+          <div class="artistName shine" />
+        </div>
+        <div class="downloadButton shine" />
+      </div>
+    {/each}
   {/each}
 
   <div style="height: 115px;" />

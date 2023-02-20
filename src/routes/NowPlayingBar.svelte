@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import "./styles.css";
   import play_song from "$lib/svg/play-song.svg";
   import pause_song from "$lib/svg/pause-song.svg";
@@ -9,26 +9,27 @@
   import shuffle_btn from "$lib/svg/Shuffle.svg";
   import repeat_btn from "$lib/svg/Repeat.svg";
   import { onMount } from "svelte";
-  import { app, currentPlaying } from "./stores";
-  import { getStorage, ref, getDownloadURL } from "firebase/storage";
+  import { currentPlaying, songs } from "./stores";
 
   let changingButton = play_song;
-  const storage = getStorage($app);
+  let audioFile = document.createElement("audio");
+
+  console.log($currentPlaying, $songs);
 
   const audio = {
-    play: true,
     currentTime: 0,
     totalDuration: 0,
-    seeking: true,
+    seeking: false,
+    seektime: 0,
   };
 
   const playPause = () => {
-    if (audio.play == false) {
-      audio.play = true;
+    if (audioFile.paused == false) {
       changingButton = play_song;
-    } else if (audio.play == true) {
-      audio.play = false;
+      audioFile.pause();
+    } else if (audioFile.paused == true) {
       changingButton = pause_song;
+      audioFile.play();
     } else {
       console.log("Error while playing");
     }
@@ -48,7 +49,77 @@
     return ret;
   }
 
-  onMount(async () => {
+  let nowPlayingSong = "none";
+  let runOnceInitially = false;
+  $: $currentPlaying,
+    (() => {
+      const nextToPlaySong = $currentPlaying.song;
+
+      if (runOnceInitially) {
+        if (nowPlayingSong != "none" && nowPlayingSong != nextToPlaySong) {
+          if (audioFile.paused == false) {
+            changingButton = play_song;
+            audioFile.pause();
+          }
+          audioFile.src = $currentPlaying.audio;
+          audioFile.onloadedmetadata = () => {
+            audio.totalDuration = audioFile.duration;
+          };
+          nowPlayingSong = $currentPlaying.song;
+          if (audioFile.paused == true) {
+            changingButton = pause_song;
+            audioFile.play();
+          }
+        }
+      } else {
+        runOnceInitially = true;
+        nowPlayingSong = "something";
+      }
+    })();
+  // @ts-ignore
+  const changeSong = (currentIndex, totalSongs, toDo) => {
+    if (0 < currentIndex < totalSongs + 1) {
+      if (toDo == "increment") {
+        currentIndex = currentIndex + 1;
+      } else if (toDo == "decrement") {
+        currentIndex = currentIndex - 1;
+      }
+    }
+    if (currentIndex <= 0) {
+      if (toDo == "decrement") {
+        currentIndex = totalSongs;
+      }
+    }
+    if (currentIndex >= totalSongs + 1) {
+      if (toDo == "increment") {
+        currentIndex = 1;
+      }
+    }
+
+    $songs.songs.forEach((songs) => {
+      if (songs.id == currentIndex) {
+        $currentPlaying = songs;
+      }
+    });
+  };
+
+  var start = Date.now();
+  function draw() {
+    requestAnimationFrame(draw);
+    var elapsed = Date.now() - start;
+    //console.log(elapsed / 1000);
+    if (!audio.seeking) {
+      audio.currentTime = audioFile.currentTime;
+
+      if (audioFile.ended) {
+        changeSong($currentPlaying.id, $songs.totalSongs, "increment");
+      }
+    }
+  }
+  draw();
+
+  onMount(() => {
+    audioFile = new Audio();
     document.getElementById("minimizeArea")?.addEventListener("click", () => {
       document.getElementById("musicOverlay")?.classList.toggle("fullScreen");
       document.getElementById("musicOverlay")?.classList.toggle("nowPlaying");
@@ -57,9 +128,6 @@
       document.getElementById("musicOverlay")?.classList.toggle("lyricsResize");
     });
   });
-
-  export const prerender = false;
-  export const ssr = false;
 </script>
 
 <div class="effect" />
@@ -75,7 +143,7 @@
     </button>
   </div>
 
-  <img src={album_art} id="albumImage" alt="" srcset="" />
+  <img src={$currentPlaying.image} id="albumImage" alt="" srcset="" />
 
   <div>
     <p id="song">{$currentPlaying.song}</p>
@@ -106,8 +174,12 @@
     <button id="shuffleControl" class="moreControls"
       ><img src={shuffle_btn} alt="" srcset="" /></button
     >
-    <button id="backControl" class="moreControls"
-      ><img src={backwards_btn} alt="" srcset="" /></button
+    <button
+      id="backControl"
+      class="moreControls"
+      on:click={() => {
+        changeSong($currentPlaying.id, $songs.totalSongs, "decrement");
+      }}><img src={backwards_btn} alt="" srcset="" /></button
     >
     <button
       id="pausePlay"
@@ -117,23 +189,15 @@
     >
       <img src={changingButton} alt="" srcset="" />
     </button>
-    <button id="forwardControl" class="moreControls"
-      ><img src={forwards_btn} alt="" srcset="" /></button
+    <button
+      id="forwardControl"
+      class="moreControls"
+      on:click={() => {
+        changeSong($currentPlaying.id, $songs.totalSongs, "increment");
+      }}><img src={forwards_btn} alt="" srcset="" /></button
     >
     <button id="repeatControl" class="moreControls"
       ><img src={repeat_btn} alt="" srcset="" /></button
     >
   </div>
 </div>
-<!--<div id="minimise" class="minimise" />-->
-<audio
-  id="audio"
-  bind:paused={audio.play}
-  bind:currentTime={audio.currentTime}
-  bind:duration={audio.totalDuration}
-  bind:seeking={audio.seeking}
-  on:ended={() => {
-    console.log("audio has ended");
-    playPause();
-  }}
-/>

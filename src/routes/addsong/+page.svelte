@@ -1,6 +1,6 @@
 <script lang="ts">
   import back_arrow from "$lib/svg/back-arrow.svg";
-  import album_art from "$lib/album/album.jpg";
+  import album_art from "$lib/album/album.png";
 </script>
 
 <div class="navigation">

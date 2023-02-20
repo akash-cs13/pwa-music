@@ -1,9 +1,7 @@
 <script lang="ts">
   import download_button from "$lib/svg/download_button.svg";
   import album_art from "$lib/album/album.png";
-  import { app, currentPlaying } from "./stores";
-  import { getStorage, ref, getDownloadURL, getBlob } from "firebase/storage";
-  const storage = getStorage($app);
+  import { currentPlaying } from "./stores";
 
   interface currentInfo {
     audio: string;
@@ -11,47 +9,10 @@
     image: string;
     song: string;
     lyrics: string;
+    id: number;
   }
+
   export let song: currentInfo;
-
-  async function audioURL() {
-    //$currentPlaying.audio
-    let url = await Promise.resolve(
-      getDownloadURL(ref(storage, song.audio))
-        .then((url) => {
-          url;
-          console.log(url);
-
-          document.getElementById("audio")?.setAttribute("src", url);
-        })
-        .catch((error) => {
-          console.log(error.code);
-        })
-    );
-
-    return url;
-  }
-
-  getDownloadURL(ref(storage, "images/stars.jpg"))
-    .then((url) => {
-      // `url` is the download URL for 'images/stars.jpg'
-
-      // This can be downloaded directly:
-      const xhr = new XMLHttpRequest();
-      xhr.responseType = "blob";
-      xhr.onload = (event) => {
-        const blob = xhr.response;
-      };
-      xhr.open("GET", url);
-      xhr.send();
-
-      // Or inserted into an <img> element
-      const img = document.getElementById("myimg");
-      img?.setAttribute("src", url);
-    })
-    .catch((error) => {
-      // Handle any errors
-    });
 </script>
 
 <div class="MusicCard">
@@ -59,7 +20,6 @@
     <button
       on:click={() => {
         $currentPlaying = song;
-        audioURL();
       }}
       style="height: 100%; width: 100%;"
     />
@@ -71,7 +31,7 @@
         style="width: 84px;
   height: 84px;  filter: drop-shadow(0px 6px 20px rgba(0, 0, 0, 0.15));
   border-radius: 25px;"
-        src={album_art}
+        src={song.image}
         alt={album_art}
         srcset=""
       />
@@ -85,8 +45,7 @@
     <div>
       <button
         on:click={() => {
-          console.log("downlaod ", song.audio);
-          getBlob(ref(storage, song.audio));
+          console.log("download ", song.audio);
         }}
       >
         <img
