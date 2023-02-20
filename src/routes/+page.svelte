@@ -2,7 +2,6 @@
   import "./styles.css";
   import MusicListcard from "./MusicListcard.svelte";
   import circle_plus from "$lib/svg/circle-plus-solid.svg";
-  import album_art from "$lib/album/album.png";
   import { getFirestore, collection, getDocs } from "firebase/firestore";
   import { onMount } from "svelte";
   import { app, songs } from "./stores";
@@ -48,7 +47,7 @@
     }
     return { totalSongs: count, songs: temp2 };
   }
-
+  var checkForNew;
   onMount(async () => {
     if ($songs.totalSongs == 0) {
       $songs = await MyData();

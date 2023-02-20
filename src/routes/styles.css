@@ -213,12 +213,44 @@ body {
 
 #musicOverlay.fullScreen div:nth-child(5) {
   display: grid;
+  grid-template-areas:
+    "slider"
+    "time";
   grid-template-rows: 1fr 1fr;
   width: 90%;
 }
 #musicOverlay.fullScreen div:nth-child(5) .slidertime {
+  grid-area: time;
+  width: 100%;
+  border-radius: 0px;
+  background-color: none;
+  box-shadow: none;
+  background: none;
+  color: var(--TextColor);
+  font-size: 18px;
   display: flex;
   justify-content: space-between;
+}
+#musicOverlay.fullScreen div:nth-child(5) .nomove {
+  grid-area: slider;
+}
+
+#musicOverlay.fullScreen div:nth-child(5) .move {
+  grid-area: slider;
+  position: relative;
+  z-index: 12;
+}
+
+#musicOverlay.fullScreen div:nth-child(5) .touch {
+  grid-area: slider;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  z-index: 11;
+}
+
+.ontouch {
+  display: none;
 }
 
 #musicOverlay.fullScreen div:nth-child(6) {
@@ -310,6 +342,20 @@ body {
 #musicOverlay.fullScreen.lyricsResize div:nth-child(5) {
   grid-column: 1 / span 2;
 }
+
+#musicOverlay.fullScreen.lyricsResize div:nth-child(5) .slidertime {
+  grid-area: time;
+  width: 100%;
+  border-radius: 0px;
+  background-color: none;
+  box-shadow: none;
+  background: none;
+  color: var(--TextColor);
+  font-size: 18px;
+  display: flex;
+  justify-content: space-between;
+}
+
 #musicOverlay.fullScreen.lyricsResize div:nth-child(6) {
   grid-column: 1 / span 2;
 }
@@ -378,6 +424,7 @@ body {
   background: var(--accentColor);
   border: 3px solid var(--accentColor);
   border-radius: 14px;
+  font-family: "Poppins", sans-serif;
   font-weight: 700;
   font-size: 16px;
   color: var(--TextColor);

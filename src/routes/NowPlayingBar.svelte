@@ -3,7 +3,6 @@
   import play_song from "$lib/svg/play-song.svg";
   import pause_song from "$lib/svg/pause-song.svg";
   import minimize_button from "$lib/svg/minimize-button.svg";
-  import album_art from "$lib/album/album.png";
   import backwards_btn from "$lib/svg/backwards-button.svg";
   import forwards_btn from "$lib/svg/fordward-button.svg";
   import shuffle_btn from "$lib/svg/Shuffle.svg";
@@ -117,7 +116,7 @@
     }
   }
   draw();
-
+  let varX = 0;
   onMount(() => {
     audioFile = new Audio();
     document.getElementById("minimizeArea")?.addEventListener("click", () => {
@@ -126,6 +125,35 @@
     });
     document.getElementById("lyrics")?.addEventListener("click", () => {
       document.getElementById("musicOverlay")?.classList.toggle("lyricsResize");
+    });
+
+    let sliderSize;
+    const min_max = (min: number, element: number, max: number) => {
+      if (element <= min) {
+        return min;
+      } else if (element >= max) {
+        return max;
+      } else {
+        return element;
+      }
+    };
+    document.getElementById("touch")?.addEventListener("touchstart", (e) => {
+      document.getElementById("myRange_move")?.classList.remove("ontouch");
+      document.getElementById("myRange_nomove")?.classList.add("ontouch");
+    });
+
+    document.getElementById("touch")?.addEventListener("touchmove", (e) => {
+      sliderSize = document
+        .getElementById("myRange_move")
+        ?.getBoundingClientRect();
+      varX = min_max(0, (e.touches[0].clientX - 25) / sliderSize?.width, 1);
+    });
+
+    document.getElementById("touch")?.addEventListener("touchend", (e) => {
+      document.getElementById("myRange_move")?.classList.add("ontouch");
+      document.getElementById("myRange_nomove")?.classList.remove("ontouch");
+      audioFile.currentTime = varX * audio.totalDuration;
+      console.log(varX * audio.totalDuration);
     });
   });
 </script>
@@ -159,11 +187,22 @@
       type="range"
       step="0.01"
       min="0.0"
+      max={1}
+      bind:value={varX}
+      class="slider move ontouch"
+      id="myRange_move"
+    />
+    <div class="touch" id="touch" />
+    <input
+      type="range"
+      step="0.01"
+      min="0.0"
       max={audio.totalDuration}
-      class="slider"
-      id="myRange"
+      class="slider nomove"
+      id="myRange_nomove"
       bind:value={audio.currentTime}
     />
+
     <div class="slidertime">
       <p style="padding-left: 3px;">{fmtMSS(audio.currentTime)}</p>
       <p style="padding-right: 3px;">{fmtMSS(audio.totalDuration)}</p>

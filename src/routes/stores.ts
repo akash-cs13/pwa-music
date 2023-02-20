@@ -27,12 +27,14 @@ interface songInfo{
           id: number;
         }[];
       }
-
+      
+let songUplaod:any = {};
+let uploadInfo:currentInfo;
 let songslist:songInfo = {
     totalSongs: 0,
     songs: []
-};
-
+  };
+  
 const firebaseConfig = {
     apiKey: "AIzaSyDLOcgayXHtMcmDfWwS-2YZ0EqDDUWzSy8",
     authDomain: "pwa-music-fced1.firebaseapp.com",
@@ -48,3 +50,7 @@ export let songs = writable(songslist);
 export const app = writable(initializeApp(firebaseConfig));
 
 export const currentPlaying = writable(temp);
+
+export let songToUpload = writable(songUplaod);
+
+export let uploadSong = writable(uploadInfo)
