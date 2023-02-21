@@ -5,15 +5,45 @@ interface currentInfo{
     artist: string,
     image: string,
     song: string,
-    lyrics: string
+    lyrics: any,
+    id: number,
 }
+interface uploadInfo{
+  audio: any,
+  artist: string,
+  image: any,
+  song: string,
+  lyrics: any,
+  id: number,
+}
+
 const temp: currentInfo = {
     audio: "none",
     artist: "none",
     image: "none",
     song: "none",
-    lyrics: "none"
+    lyrics: "none",
+    id: 0
 };
+interface songInfo{
+        totalSongs: number;
+        songs: {
+          audio: string;
+          artist: string;
+          image: string;
+          song: string;
+          lyrics: string;
+          id: number;
+        }[];
+      }
+      
+let songUplaod:any = {};
+let uploadInfos:uploadInfo;
+let songslist:songInfo = {
+    totalSongs: 0,
+    songs: []
+  };
+  
 const firebaseConfig = {
     apiKey: "AIzaSyDLOcgayXHtMcmDfWwS-2YZ0EqDDUWzSy8",
     authDomain: "pwa-music-fced1.firebaseapp.com",
@@ -24,6 +54,12 @@ const firebaseConfig = {
     measurementId: "G-1R0SFL17XC",
   };
 
+export let songs = writable(songslist);
+
 export const app = writable(initializeApp(firebaseConfig));
 
 export const currentPlaying = writable(temp);
+
+export let songToUpload = writable(songUplaod);
+
+export let uploadSong = writable(uploadInfos)

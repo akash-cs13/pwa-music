@@ -4,6 +4,10 @@
   import { currentPlaying } from "./stores";
 </script>
 
+<svelte:head>
+  <title>PWA Music App</title>
+</svelte:head>
+
 <body>
   <slot />
   {#if $currentPlaying.song !== "none"}
