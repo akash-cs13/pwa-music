@@ -9,17 +9,21 @@
   import repeat_btn from "$lib/svg/Repeat.svg";
   import { onMount } from "svelte";
   import { currentPlaying, songs } from "./stores";
+  import { collectionGroup } from "firebase/firestore";
 
   let changingButton = play_song;
   let audioFile = document.createElement("audio");
-
-  console.log($currentPlaying, $songs);
+  let previousSongID1;
+  let previousSongID2;
+  //console.log($currentPlaying, $songs);
 
   const audio = {
     currentTime: 0,
     totalDuration: 0,
     seeking: false,
     seektime: 0,
+    repeat: false,
+    shuffle: false,
   };
 
   const playPause = () => {
@@ -54,6 +58,12 @@
     (() => {
       const nextToPlaySong = $currentPlaying.song;
 
+      if (previousSongID1 != $currentPlaying.id) {
+        previousSongID2 = previousSongID1;
+        previousSongID1 = $currentPlaying.id;
+        //console.log(previousSongID2, previousSongID1);
+      }
+
       if (runOnceInitially) {
         if (nowPlayingSong != "none" && nowPlayingSong != nextToPlaySong) {
           if (audioFile.paused == false) {
@@ -64,6 +74,7 @@
           audioFile.onloadedmetadata = () => {
             audio.totalDuration = audioFile.duration;
           };
+
           nowPlayingSong = $currentPlaying.song;
           if (audioFile.paused == true) {
             changingButton = pause_song;
@@ -102,6 +113,19 @@
     });
   };
 
+  const randomSong = () => {
+    let myarray: number[] = [];
+    for (let i = 1; i <= $songs.totalSongs; i++) {
+      //console.log(previousSongID1, previousSongID2);
+      if (i != previousSongID1 && i != previousSongID2) {
+        myarray.push(i);
+      }
+    }
+    var random = Math.floor(Math.random() * myarray.length);
+    //console.log(myarray, myarray[random]);
+    return myarray[random];
+  };
+
   var start = Date.now();
   function draw() {
     requestAnimationFrame(draw);
@@ -111,7 +135,16 @@
       audio.currentTime = audioFile.currentTime;
 
       if (audioFile.ended) {
-        changeSong($currentPlaying.id, $songs.totalSongs, "increment");
+        if (audio.shuffle) {
+          var random = randomSong();
+          $songs.songs.forEach((songs) => {
+            if (songs.id == random) {
+              $currentPlaying = songs;
+            }
+          });
+        } else {
+          changeSong($currentPlaying.id, $songs.totalSongs, "increment");
+        }
       }
     }
   }
@@ -119,6 +152,7 @@
   let varX = 0;
   onMount(() => {
     audioFile = new Audio();
+    previousSongID1 = 0;
     document.getElementById("minimizeArea")?.addEventListener("click", () => {
       document.getElementById("musicOverlay")?.classList.toggle("fullScreen");
       document.getElementById("musicOverlay")?.classList.toggle("nowPlaying");
@@ -137,9 +171,14 @@
         return element;
       }
     };
+
     document.getElementById("touch")?.addEventListener("touchstart", (e) => {
       document.getElementById("myRange_move")?.classList.remove("ontouch");
       document.getElementById("myRange_nomove")?.classList.add("ontouch");
+      sliderSize = document
+        .getElementById("myRange_move")
+        ?.getBoundingClientRect();
+      varX = min_max(0, (e.touches[0].clientX - 25) / sliderSize?.width, 1);
     });
 
     document.getElementById("touch")?.addEventListener("touchmove", (e) => {
@@ -153,7 +192,7 @@
       document.getElementById("myRange_move")?.classList.add("ontouch");
       document.getElementById("myRange_nomove")?.classList.remove("ontouch");
       audioFile.currentTime = varX * audio.totalDuration;
-      console.log(varX * audio.totalDuration);
+      //console.log(varX * audio.totalDuration);
     });
   });
 </script>
@@ -180,6 +219,23 @@
 
   <div id="lyrics">
     <p class="lyricsLabel">Lyrics</p>
+    <div class="lyricsLines">
+      {#if $currentPlaying.lyrics.type == "tlrc"}
+        {#each $currentPlaying.lyrics.data.lines as line}
+          {#if line.start >= audio.currentTime}
+            <p class="lyricsLine ">{line.text}</p>
+          {:else}
+            <p class="lyricsLine dim">{line.text}</p>
+          {/if}
+        {/each}
+      {:else if $currentPlaying.lyrics.type == "lrc"}
+        {#each $currentPlaying.lyrics.data.lines as line}
+          <p class="lyricsLine dim">{line}</p>
+        {/each}
+      {:else}
+        <p class="lyricsLine">Looks like no lyrics are added...</p>
+      {/if}
+    </div>
   </div>
 
   <div>
@@ -210,9 +266,24 @@
   </div>
 
   <div>
-    <button id="shuffleControl" class="moreControls"
-      ><img src={shuffle_btn} alt="" srcset="" /></button
+    <button
+      id="shuffleControl"
+      class="moreControls"
+      on:click={() => {
+        audio.shuffle = !audio.shuffle;
+      }}
     >
+      {#if audio.shuffle}
+        <img
+          src={shuffle_btn}
+          style="filter: invert(47%) sepia(57%) saturate(6782%) hue-rotate(218deg) brightness(90%) contrast(89%);"
+          alt=""
+          srcset=""
+        />
+      {:else}
+        <img src={shuffle_btn} alt="" srcset="" />
+      {/if}
+    </button>
     <button
       id="backControl"
       class="moreControls"
@@ -235,8 +306,25 @@
         changeSong($currentPlaying.id, $songs.totalSongs, "increment");
       }}><img src={forwards_btn} alt="" srcset="" /></button
     >
-    <button id="repeatControl" class="moreControls"
-      ><img src={repeat_btn} alt="" srcset="" /></button
+    <button
+      id="repeatControl"
+      class="moreControls"
+      on:click={() => {
+        audio.repeat = !audio.repeat;
+
+        audioFile.loop = audio.repeat;
+      }}
     >
+      {#if audio.repeat}
+        <img
+          src={repeat_btn}
+          style="filter: invert(47%) sepia(57%) saturate(6782%) hue-rotate(218deg) brightness(90%) contrast(89%);"
+          alt=""
+          srcset=""
+        />
+      {:else}
+        <img src={repeat_btn} alt="" srcset="" />
+      {/if}
+    </button>
   </div>
 </div>

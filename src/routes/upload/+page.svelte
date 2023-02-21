@@ -11,7 +11,7 @@
     artist: "",
     image: "",
     song: "",
-    lyrics: "",
+    lyrics: { type: "none", data: "" },
     id: $songs.totalSongs + 1,
   };
 
@@ -28,29 +28,8 @@
     for (const file of files) {
       if (file.type == "audio/mpeg") {
         fileName = file.name;
-        console.log("first", file);
+
         $uploadSong.audio = file;
-
-        jsmediatags.read(file, {
-          onSuccess: function (tag: any) {
-            console.log(tag);
-            const { data, format } = tag.tags.picture;
-            let base64String = "";
-            for (let i = 0; i < data.length; i++) {
-              base64String += String.fromCharCode(data[i]);
-            }
-            const img = `data:${data.format};base64,${window.btoa(
-              base64String
-            )}`;
-
-            $uploadSong.image = img;
-            $uploadSong.song = tag.tags.title;
-            $uploadSong.artist = tag.tags.artist;
-          },
-          onError: function (error: any) {
-            console.log(error);
-          },
-        });
       } else {
         console.log("bad file type: ", file.type);
       }
@@ -102,7 +81,48 @@
     </div>
     <button
       class="nextButton"
-      on:click={async () => {
+      on:click={() => {
+        jsmediatags.read($uploadSong.audio, {
+          onSuccess: function (tag) {
+            //console.log(tag);
+            try {
+              //console.log(typeof tag.tags.title, tag.tags.title == undefined);
+              if (tag.tags.title != undefined) {
+                $uploadSong.song = tag.tags.title;
+              } else {
+                $uploadSong.song = fileName;
+              }
+
+              if (tag.tags.artist != undefined) {
+                $uploadSong.artist = tag.tags.artist;
+              }
+
+              if (tag.tags.lyrics != undefined) {
+                $uploadSong.lyrics = { type: "lrc", data: tag.tags.lyrics };
+              }
+
+              if (tag.tags.picture != undefined) {
+                const { data, format } = tag.tags.picture;
+                let base64String = "";
+                for (let i = 0; i < data.length; i++) {
+                  base64String += String.fromCharCode(data[i]);
+                }
+                const img = `data:${data.format};base64,${window.btoa(
+                  base64String
+                )}`;
+
+                $uploadSong.image = img;
+              } else {
+                $uploadSong.image = "";
+              }
+            } catch (error) {
+              console.log(error);
+            }
+          },
+          onError: function (error) {
+            console.log(error);
+          },
+        });
         goto("/addsong");
       }}
       ><div class="nextButtonClass">

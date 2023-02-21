@@ -12,7 +12,7 @@
     artist: string;
     image: string;
     song: string;
-    lyrics: string;
+    lyrics: any;
     id: number;
   }
 
@@ -33,7 +33,7 @@
         artist: doc.data().artist,
         image: doc.data().image,
         song: doc.data().song,
-        lyrics: doc.data().lyrics,
+        lyrics: JSON.parse(doc.data().lyrics),
         id: parseInt(doc.id),
       });
     });

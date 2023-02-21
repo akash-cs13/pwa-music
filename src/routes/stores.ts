@@ -5,9 +5,18 @@ interface currentInfo{
     artist: string,
     image: string,
     song: string,
-    lyrics: string,
+    lyrics: any,
     id: number,
 }
+interface uploadInfo{
+  audio: any,
+  artist: string,
+  image: any,
+  song: string,
+  lyrics: any,
+  id: number,
+}
+
 const temp: currentInfo = {
     audio: "none",
     artist: "none",
@@ -29,7 +38,7 @@ interface songInfo{
       }
       
 let songUplaod:any = {};
-let uploadInfo:currentInfo;
+let uploadInfos:uploadInfo;
 let songslist:songInfo = {
     totalSongs: 0,
     songs: []
@@ -53,4 +62,4 @@ export const currentPlaying = writable(temp);
 
 export let songToUpload = writable(songUplaod);
 
-export let uploadSong = writable(uploadInfo)
+export let uploadSong = writable(uploadInfos)
