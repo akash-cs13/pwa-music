@@ -1,10 +1,6 @@
 <script lang="ts">
   import "../styles.css";
-  import back_arrow from "$lib/svg/back-arrow.svg";
   import album_art from "$lib/album/album.png";
-  import edit_pencil from "$lib/svg/edit-pencil.svg";
-  import add_icon from "$lib/svg/add-symbol.svg";
-  import upload_icon from "$lib/svg/upload-symbol.svg";
   import { onMount } from "svelte";
   import { app, uploadSong } from "../stores";
   import { getStorage, ref, uploadBytes } from "firebase/storage";
@@ -148,14 +144,20 @@
 </script>
 
 <div class="navigation">
-  <a href="/" style="justify-self: left; padding: 0px 30px"
-    ><img
-      src={back_arrow}
-      style="height: 19px; width:19px"
-      alt=""
-      srcset=""
-    /></a
-  >
+  <a href="/" style="justify-self: left; padding: 0px 30px">
+    <svg
+      width="19"
+      height="19"
+      viewBox="0 0 19 33"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M0.795023 18.4414C-0.265008 17.3676 -0.265008 15.6238 0.795023 14.55L14.3634 0.805351C15.4235 -0.268449 17.1449 -0.268449 18.205 0.805351C19.265 1.87915 19.265 3.623 18.205 4.6968L6.55311 16.5L18.1965 28.3032C19.2565 29.377 19.2565 31.1209 18.1965 32.1947C17.1365 33.2684 15.415 33.2684 14.3549 32.1947L0.786542 18.45L0.795023 18.4414Z"
+        fill="white"
+      />
+    </svg>
+  </a>
   <p class="title">Add Song</p>
   <div />
 </div>
@@ -173,15 +175,23 @@
         bind:files={GetImage}
         style="display: none;"
       />
-      <img
-        src={edit_pencil}
-        alt=""
-        srcset=""
-        style="width: 20px; height: 20px; 
-        justify-self: center;
-        align-self: center;"
-      /></label
-    >
+
+      <svg
+        width="20"
+        height="20"
+        style="
+      justify-self: center;
+      align-self: center;"
+        viewBox="0 0 20 20"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M14.1831 0.733162L12.2904 2.6257L17.3741 7.70896L19.2668 5.81642C20.2444 4.83887 20.2444 3.25524 19.2668 2.27769L17.726 0.733162C16.7484 -0.244387 15.1647 -0.244387 14.187 0.733162H14.1831ZM11.4067 3.5094L2.29128 12.628C1.88459 13.0346 1.58739 13.5391 1.42315 14.0904L0.038834 18.7944C-0.0589286 19.1267 0.031013 19.4826 0.273464 19.725C0.515915 19.9674 0.871771 20.0574 1.20025 19.9635L5.90459 18.5793C6.45597 18.4151 6.96043 18.1179 7.36712 17.7112L16.4903 8.59266L11.4067 3.5094Z"
+          fill="white"
+        />
+      </svg>
+    </label>
   </div>
   <div class="text-area">
     <div class="full">
@@ -208,12 +218,20 @@
       <label for="lyrics-field" class="half"
         >Lyrics
         <label style="display: flex;">
-          <img
-            src={add_icon}
-            alt=""
-            srcset=""
-            style="width: 14px; height: 14px;"
-          />
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 14 14"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M7 0V7M7 14V7M7 7H12.5M7 7H1.5H0H7ZM7 7H14"
+              stroke="white"
+              stroke-width="2"
+            />
+          </svg>
+
           <input
             type="file"
             accept=".lrc"
@@ -241,12 +259,18 @@
       UploadToCloud();
     }}
     ><p>Upload</p>
-    <img
-      src={upload_icon}
-      alt=""
-      srcset=""
-      style="width: 46px; height: 32px;"
-    /></button
+    <svg
+      width="46"
+      height="33"
+      viewBox="0 0 46 33"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M10.35 32.6875C4.63594 32.6875 0 28.0264 0 22.2812C0 17.743 2.88937 13.884 6.91437 12.4604C6.90719 12.2652 6.9 12.0701 6.9 11.875C6.9 5.48672 12.0462 0.3125 18.4 0.3125C22.6622 0.3125 26.3781 2.63945 28.3691 6.1082C29.4616 5.37109 30.7841 4.9375 32.2 4.9375C36.0094 4.9375 39.1 8.04492 39.1 11.875C39.1 12.7566 38.9347 13.5949 38.64 14.3754C42.8375 15.2281 46 18.9643 46 23.4375C46 28.5467 41.8816 32.6875 36.8 32.6875H10.35ZM16.0281 17.0059C15.3525 17.6852 15.3525 18.7836 16.0281 19.4557C16.7037 20.1277 17.7962 20.135 18.4647 19.4557L21.2678 16.6373V26.3281C21.2678 27.2893 22.0369 28.0625 22.9928 28.0625C23.9487 28.0625 24.7178 27.2893 24.7178 26.3281V16.6373L27.5209 19.4557C28.1966 20.135 29.2891 20.135 29.9575 19.4557C30.6259 18.7764 30.6331 17.6779 29.9575 17.0059L24.2075 11.2246C23.5319 10.5453 22.4394 10.5453 21.7709 11.2246L16.0209 17.0059H16.0281Z"
+        fill="white"
+      />
+    </svg></button
   >
 </div>
 
@@ -371,5 +395,9 @@
     flex-direction: column;
     height: 100%;
     justify-content: space-between;
+  }
+
+  textarea {
+    resize: none;
   }
 </style>

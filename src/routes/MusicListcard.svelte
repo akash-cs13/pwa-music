@@ -1,5 +1,4 @@
 <script lang="ts">
-  import download_button from "$lib/svg/download_button.svg";
   import album_art from "$lib/album/album.png";
   import { currentPlaying } from "./stores";
 
@@ -48,12 +47,20 @@
           console.log("download ", song.audio);
         }}
       >
-        <img
-          src={download_button}
-          alt=""
-          srcset=""
-          style="width: 34px; height: 34px;"
-        />
+        <svg
+          width="34"
+          height="34"
+          viewBox="0 0 34 34"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <circle cx="17" cy="17" r="16" stroke="white" stroke-width="2" />
+          <path
+            d="M17 9V24M17 24L23.5 19M17 24L10 19"
+            stroke="white"
+            stroke-width="2"
+          />
+        </svg>
       </button>
     </div>
   </div>

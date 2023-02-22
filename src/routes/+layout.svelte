@@ -8,9 +8,11 @@
   <title>PWA Music App</title>
 </svelte:head>
 
-<body>
-  <slot />
-  {#if $currentPlaying.song !== "none"}
-    <NowPlayingBar />
-  {/if}
+<body class="appbody">
+  <div class="myappbody">
+    <slot />
+    {#if $currentPlaying.song !== "none"}
+      <NowPlayingBar />
+    {/if}
+  </div>
 </body>

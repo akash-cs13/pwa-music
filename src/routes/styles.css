@@ -45,12 +45,14 @@ body {
   background: var(--mainColor1);
   color: var(--TextColor);
 }
-@media only screen and (max-width: 600px) {
-  body {
-    display: grid;
-    grid-template-rows: 82px auto 114px;
-  }
+/* @media only screen and (max-width: 600px) { */
+.myappbody {
+  display: grid;
+  grid-template-rows: 82px auto 114px;
+  height: 100%;
+  width: 100%;
 }
+/* } */
 .navigation {
   display: grid;
   grid-template-areas: "one two three";
@@ -73,7 +75,7 @@ body {
 .effect {
   position: fixed;
   height: 103px;
-  width: calc(100vw - 20px);
+  width: calc(100% - 20px);
   background: rgba(255, 255, 255, 0.06);
   box-shadow: 0px -19px 47px rgba(0, 0, 0, 0.06);
   backdrop-filter: blur(10.5px);
@@ -86,7 +88,7 @@ body {
 #musicOverlay.nowPlaying {
   position: fixed;
   height: 103px;
-  width: calc(100vw - 20px);
+  width: calc(100% - 20px);
   bottom: 0px;
   left: 0px;
   padding: 5.5px 10px;
@@ -102,9 +104,9 @@ body {
 
 #musicOverlay.nowPlaying div:nth-child(1) {
   display: block;
-  position: fixed;
+  position: absolute;
   height: 103px;
-  width: 100%;
+  width: 75%;
   bottom: 0px;
   right: 25%;
   padding: 5.5px 10px;
@@ -145,12 +147,12 @@ body {
 #musicOverlay.fullScreen {
   position: fixed;
   height: 100%;
-  width: 100vw;
+  width: 100%;
   bottom: 0px;
   left: 0px;
   background: var(--mainColor1);
   display: grid;
-  grid-template-rows: 72px 4fr 0.7fr 0.5fr 0.7fr 1fr;
+  grid-template-rows: 1fr 4fr 0.7fr 0.5fr 0.7fr 1fr;
   justify-items: center;
   gap: 10px;
   align-items: center;
@@ -238,7 +240,7 @@ body {
 #musicOverlay.fullScreen div:nth-child(5) .move {
   grid-area: slider;
   position: relative;
-  z-index: 12;
+  z-index: 11;
 }
 
 #musicOverlay.fullScreen div:nth-child(5) .touch {
@@ -246,7 +248,7 @@ body {
   position: relative;
   width: 100%;
   height: 100%;
-  z-index: 11;
+  z-index: 12;
 }
 
 .ontouch {
@@ -551,4 +553,60 @@ body {
 
 .dim {
   color: var(--TextColor);
+}
+
+.hidden {
+  display: none;
+}
+
+@media (min-aspect-ratio: 5 / 8) {
+  .appbody {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .myappbody {
+    width: 80vw;
+    max-width: 400px;
+    height: 100%;
+
+    overflow-x: hidden;
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+
+    border-radius: 23px;
+    background: var(--mainColor1);
+    box-shadow: 10px 10px 20px #1a1a1a, -10px -10px 20px #222222;
+  }
+
+  #musicOverlay.fullScreen {
+    width: 80vw;
+    max-width: 400px;
+    border-radius: 23px;
+    background: var(--mainColor1);
+    box-shadow: 10px 10px 20px #1a1a1a, -10px -10px 20px #222222;
+    left: auto;
+  }
+
+  #musicOverlay.nowPlaying {
+    left: auto;
+    width: (80vw -20px);
+    max-width: 380px;
+  }
+
+  #effect {
+    left: auto;
+    width: (80vw -20px);
+    max-width: 380px;
+  }
+
+  ::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+path.colouredSvg {
+  fill: var(--accentColor);
+  stroke: var(--accentColor);
 }
