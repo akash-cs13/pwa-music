@@ -2,10 +2,15 @@
   import "./styles.css";
   import { onMount } from "svelte";
   import { currentPlaying, songs } from "./stores";
+  import { openDB } from "idb";
+
   let audioFile = new Audio();
-  let previousSongID1: number;
-  let previousSongID2: number;
+  let previousSongID: number;
+  let justPlayingSongID: number;
+
   //console.log($currentPlaying, $songs);
+
+  //for smoother playback when slider is dragged
   const audio = {
     currentTime: 0,
     totalDuration: 0,
@@ -14,15 +19,8 @@
     repeat: false,
     shuffle: false,
   };
-  const playPause = () => {
-    if (audioFile.paused == false) {
-      audioFile.pause();
-    } else if (audioFile.paused == true) {
-      audioFile.play();
-    } else {
-      console.log("Error while playing");
-    }
-  };
+
+  //funtion to convert seconds into mm:ss format
   // @ts-ignore
   function fmtMSS(duration) {
     const hrs = ~~(duration / 3600);
@@ -36,22 +34,49 @@
     ret += "" + secs;
     return ret;
   }
+
+  async function playsong() {
+    const db = await openDB("MySongs", 1, {
+      upgrade(db, oldVersion, newVersion, transaction, event) {
+        const store = db.createObjectStore("songs", { keyPath: "id" });
+        store.createIndex("download", "song");
+      },
+    });
+
+    //await db.add("songs", { id: 5, song: "Lilac", artist: "IU" });
+
+    //audioFile.src =  await db.get("songs", 4);
+    const response = await db.get("songs", 4);
+    console.log("response", response);
+
+    //audioFile.src = response.audio;
+
+    db.close();
+  }
+
+  //if song already playing prevent it from playing fron start on click
   let nowPlayingSong = "none";
+
   let runOnceInitially = false;
   $: $currentPlaying,
-    (() => {
+    (async () => {
       const nextToPlaySong = $currentPlaying.song;
-      if (previousSongID1 != $currentPlaying.id) {
-        previousSongID2 = previousSongID1;
-        previousSongID1 = $currentPlaying.id;
-        //console.log(previousSongID2, previousSongID1);
+
+      //keeping track of last to song id for shuffling
+      if (previousSongID != $currentPlaying.id) {
+        justPlayingSongID = previousSongID;
+        previousSongID = $currentPlaying.id;
+        //console.log(justPlayingSongID, previousSongID);
       }
+
       if (runOnceInitially) {
         if (nowPlayingSong != "none" && nowPlayingSong != nextToPlaySong) {
           if (audioFile.paused == false) {
             audioFile.pause();
           }
           audioFile.src = $currentPlaying.audio;
+          playsong();
+
           audioFile.onloadedmetadata = () => {
             audio.totalDuration = audioFile.duration;
           };
@@ -88,10 +113,10 @@
         }
 
         navigator.mediaSession.setActionHandler("previoustrack", () => {
-          changeSong($currentPlaying.id, $songs.totalSongs, "decrement");
+          changeSong("decrement");
         });
         navigator.mediaSession.setActionHandler("nexttrack", () => {
-          changeSong($currentPlaying.id, $songs.totalSongs, "increment");
+          changeSong("increment");
         });
 
         audioFile.addEventListener("ratechange", (event) => {
@@ -99,60 +124,68 @@
         });
       }
     })();
+
+  //funtion to increment and decrement song, i know logic can be
   // @ts-ignore
-  const changeSong = (currentIndex, totalSongs, toDo) => {
-    if (0 < currentIndex < totalSongs + 1) {
-      if (toDo == "increment") {
-        currentIndex = currentIndex + 1;
-      } else if (toDo == "decrement") {
-        currentIndex = currentIndex - 1;
+  const changeSong = (toDo) => {
+    const currentID = $currentPlaying.id;
+    const totalLength = $songs.songs.length;
+    let index = 0;
+    let cindex = 0;
+    let index_to_play = 0;
+
+    $songs.songs.forEach((songs: any) => {
+      if (songs.id == currentID) {
+        cindex = index;
       }
-    }
-    if (currentIndex <= 0) {
-      if (toDo == "decrement") {
-        currentIndex = totalSongs;
-      }
-    }
-    if (currentIndex >= totalSongs + 1) {
-      if (toDo == "increment") {
-        currentIndex = 1;
-      }
-    }
-    $songs.songs.forEach((songs) => {
-      if (songs.id == currentIndex) {
-        $currentPlaying = songs;
-      }
+
+      index += 1;
     });
+
+    if (totalLength > 1) {
+      if (toDo == "increment") {
+        index_to_play = cindex + 1;
+      } else if (toDo == "decrement") {
+        index_to_play = cindex - 1;
+      }
+      if (cindex <= 0) {
+        if (toDo == "decrement") {
+          index_to_play = totalLength - 1;
+        }
+      }
+      if (cindex >= totalLength - 1) {
+        if (toDo == "increment") {
+          index_to_play = 0;
+        }
+      }
+    }
+
+    $currentPlaying = $songs.songs[index_to_play];
   };
+
+  //shuffle logic
   const randomSong = () => {
-    let myarray: number[] = [];
-    for (let i = 1; i <= $songs.totalSongs; i++) {
-      //console.log(previousSongID1, previousSongID2);
-      if (i != previousSongID1 && i != previousSongID2) {
+    let myarray: any[] = [];
+    $songs.songs.forEach((i) => {
+      if (i.id != previousSongID && i.id != justPlayingSongID) {
         myarray.push(i);
       }
-    }
+    });
     var random = Math.floor(Math.random() * myarray.length);
-    //console.log(myarray, myarray[random]);
-    return myarray[random];
+
+    $currentPlaying = myarray[random];
   };
-  var start = Date.now();
+
   function draw() {
     requestAnimationFrame(draw);
-    //var elapsed = Date.now() - start;
-    //console.log(elapsed / 1000);
+
     if (!audio.seeking) {
       audio.currentTime = audioFile.currentTime;
       if (audioFile.ended) {
         if (audio.shuffle) {
-          var random = randomSong();
-          $songs.songs.forEach((songs) => {
-            if (songs.id == random) {
-              $currentPlaying = songs;
-            }
-          });
+          randomSong();
         } else {
-          changeSong($currentPlaying.id, $songs.totalSongs, "increment");
+          changeSong("increment");
         }
       }
     }
@@ -161,7 +194,7 @@
   let varX = 0;
   onMount(() => {
     audioFile = new Audio();
-    previousSongID1 = 0;
+    previousSongID = 0;
     document.getElementById("minimizeArea")?.addEventListener("click", () => {
       document.getElementById("musicOverlay")?.classList.toggle("fullScreen");
       document.getElementById("musicOverlay")?.classList.toggle("nowPlaying");
@@ -170,7 +203,7 @@
     document.getElementById("lyrics")?.addEventListener("click", () => {
       document.getElementById("musicOverlay")?.classList.toggle("lyricsResize");
     });
-    let sliderSize;
+    let sliderSize: any;
     const min_max = (min: number, element: number, max: number) => {
       if (element <= min) {
         return min;
@@ -206,7 +239,6 @@
       document.getElementById("myRange_move")?.classList.add("ontouch");
       document.getElementById("myRange_nomove")?.classList.remove("ontouch");
       audioFile.currentTime = varX * audio.totalDuration;
-      //console.log(varX * audio.totalDuration);
     });
     let drag = false;
     document.getElementById("touch")?.addEventListener("mousedown", (e) => {
@@ -402,7 +434,7 @@
       id="backControl"
       class="moreControls"
       on:click={() => {
-        changeSong($currentPlaying.id, $songs.totalSongs, "decrement");
+        changeSong("decrement");
       }}
       ><svg
         width="44"
@@ -427,7 +459,13 @@
     <button
       id="pausePlay"
       on:click={() => {
-        playPause();
+        if (audioFile.paused == false) {
+          audioFile.pause();
+        } else if (audioFile.paused == true) {
+          audioFile.play();
+        } else {
+          console.log("Error while playing");
+        }
       }}
     >
       {#if audioFile.paused}
@@ -462,7 +500,7 @@
       id="forwardControl"
       class="moreControls"
       on:click={() => {
-        changeSong($currentPlaying.id, $songs.totalSongs, "increment");
+        changeSong("increment");
       }}
       ><svg
         width="44"

@@ -1,6 +1,9 @@
 <script lang="ts">
   import album_art from "$lib/album/album.png";
-  import { currentPlaying } from "./stores";
+
+  import { getStorage, ref, getBlob, getBytes } from "firebase/storage";
+  import { app, currentPlaying } from "./stores";
+  import { openDB, deleteDB, wrap, unwrap } from "idb";
 
   interface currentInfo {
     audio: string;
@@ -10,8 +13,39 @@
     lyrics: string;
     id: number;
   }
+  let progress: string = "blah";
 
   export let song: currentInfo;
+
+  const MyDownload = async () => {
+    const storage = getStorage($app);
+    const myaudioBlob = await getBlob(ref(storage, song.audio));
+    const myimageBlob = await getBlob(ref(storage, song.image));
+    progress = "cached";
+    return { audioBlob: myaudioBlob, imageBlob: myimageBlob };
+  };
+
+  async function StorageDB(imgBlob, audioBlob) {
+    // const db = await openDB("MySongs", 1, {
+    //   upgrade(db, oldVersion, newVersion, transaction, event) {
+    //     const store = db.createObjectStore("songs", { keyPath: "id" });
+    //     store.createIndex("download", "song");
+    //   },
+    // });
+
+    const db = await openDB("MySongs", 1);
+
+    await db.add("songs", {
+      id: song.id,
+      song: song.song,
+      artist: song.artist,
+      image: imgBlob,
+      audio: audioBlob,
+    });
+
+    console.log(await db.get("songs", song.id));
+    db.close();
+  }
 </script>
 
 <div class="MusicCard">
@@ -43,24 +77,72 @@
 
     <div>
       <button
-        on:click={() => {
-          console.log("download ", song.audio);
+        on:click={async () => {
+          //console.log("download ", song);
+          progress = "inProgress";
+
+          const my_audio = await MyDownload();
+
+          await StorageDB(my_audio.imageBlob, my_audio.audioBlob);
+          //console.log(reader.readAsText(my_audio.imageBlob));
         }}
       >
-        <svg
-          width="34"
-          height="34"
-          viewBox="0 0 34 34"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <circle cx="17" cy="17" r="16" stroke="white" stroke-width="2" />
-          <path
-            d="M17 9V24M17 24L23.5 19M17 24L10 19"
-            stroke="white"
-            stroke-width="2"
-          />
-        </svg>
+        {#if progress == "inProgress"}
+          <svg
+            width="34"
+            height="34"
+            viewBox="0 0 34 34"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle cx="17" cy="17" r="16" stroke="white" stroke-width="2" />
+            <path
+              class="arrowDisp"
+              d="M17 9V24M17 24L23.5 19M17 24L10 19"
+              stroke="white"
+              stroke-width="2"
+            />
+            <path
+              class="arrowHide"
+              d="M17 9V24M17 24L23.5 19M17 24L10 19"
+              stroke="white"
+              stroke-width="2"
+            />
+          </svg>
+        {:else if progress == "cached"}
+          <svg
+            width="34"
+            height="34"
+            viewBox="0 0 34 34"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="17"
+              cy="17"
+              r="16"
+              fill="white"
+              stroke="white"
+              stroke-width="2"
+            />
+            <path d="M9 17.5L14 22.5L25 12" stroke="black" stroke-width="2" />
+          </svg>
+        {:else}
+          <svg
+            width="34"
+            height="34"
+            viewBox="0 0 34 34"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle cx="17" cy="17" r="16" stroke="white" stroke-width="2" />
+            <path
+              d="M17 9V24M17 24L23.5 19M17 24L10 19"
+              stroke="white"
+              stroke-width="2"
+            />
+          </svg>
+        {/if}
       </button>
     </div>
   </div>
@@ -113,5 +195,30 @@
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+
+  @keyframes arrowLoopD {
+    from {
+      transform: translateY(0%);
+    }
+    to {
+      transform: translateY(100%);
+    }
+  }
+
+  .arrowDisp {
+    animation: arrowLoopD 2s cubic-bezier(0.24, 0.98, 0.34, 0.96) infinite;
+  }
+
+  @keyframes arrowLoopH {
+    from {
+      transform: translateY(-100%);
+    }
+    to {
+      transform: translateY(0%);
+    }
+  }
+  .arrowHide {
+    animation: arrowLoopH 2s ease infinite;
   }
 </style>

@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { writable } from "svelte/store";
+
 interface currentInfo{
     audio: string,
     artist: string,
@@ -8,6 +9,7 @@ interface currentInfo{
     lyrics: any,
     id: number,
 }
+
 interface uploadInfo{
   audio: any,
   artist: string,
@@ -34,6 +36,8 @@ interface songInfo{
           song: string;
           lyrics: string;
           id: number;
+          downloaded: boolean;
+          indexdb: string;
         }[];
       }
       

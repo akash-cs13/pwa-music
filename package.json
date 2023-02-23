@@ -25,6 +25,7 @@
   "type": "module",
   "dependencies": {
     "css-element-queries": "^1.2.3",
-    "firebase": "^9.17.1"
+    "firebase": "^9.17.1",
+    "idb": "^7.1.1"
   }
 }

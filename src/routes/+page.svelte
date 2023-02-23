@@ -46,7 +46,7 @@
     }
     return { totalSongs: count, songs: temp2 };
   }
-  var checkForNew;
+
   onMount(async () => {
     if ($songs.totalSongs == 0) {
       $songs = await MyData();
