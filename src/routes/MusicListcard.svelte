@@ -59,7 +59,7 @@
 
           const my_audio = await MyDownload();
 
-          //console.log(reader.readAsText(my_audio.imageBlob));
+          console.log(my_audio);
         }}
       >
         {#if progress == "inProgress"}
