@@ -1,14 +1,11 @@
 <script lang="ts">
   import "./styles.css";
-
   import { onMount } from "svelte";
   import { currentPlaying, songs } from "./stores";
-
   let audioFile = new Audio();
   let previousSongID1: number;
   let previousSongID2: number;
   //console.log($currentPlaying, $songs);
-
   const audio = {
     currentTime: 0,
     totalDuration: 0,
@@ -17,7 +14,6 @@
     repeat: false,
     shuffle: false,
   };
-
   const playPause = () => {
     if (audioFile.paused == false) {
       audioFile.pause();
@@ -27,7 +23,6 @@
       console.log("Error while playing");
     }
   };
-
   // @ts-ignore
   function fmtMSS(duration) {
     const hrs = ~~(duration / 3600);
@@ -41,19 +36,16 @@
     ret += "" + secs;
     return ret;
   }
-
   let nowPlayingSong = "none";
   let runOnceInitially = false;
   $: $currentPlaying,
     (() => {
       const nextToPlaySong = $currentPlaying.song;
-
       if (previousSongID1 != $currentPlaying.id) {
         previousSongID2 = previousSongID1;
         previousSongID1 = $currentPlaying.id;
         //console.log(previousSongID2, previousSongID1);
       }
-
       if (runOnceInitially) {
         if (nowPlayingSong != "none" && nowPlayingSong != nextToPlaySong) {
           if (audioFile.paused == false) {
@@ -63,7 +55,6 @@
           audioFile.onloadedmetadata = () => {
             audio.totalDuration = audioFile.duration;
           };
-
           nowPlayingSong = $currentPlaying.song;
           if (audioFile.paused == true) {
             audioFile.play();
@@ -73,13 +64,11 @@
         runOnceInitially = true;
         nowPlayingSong = "something";
       }
-
       //Media Session API
       if ("mediaSession" in navigator) {
         navigator.mediaSession.metadata = new MediaMetadata({
           title: $currentPlaying.song,
           artist: $currentPlaying.artist,
-
           artwork: [
             {
               src: $currentPlaying.image,
@@ -113,7 +102,6 @@
             },
           ],
         });
-
         // navigator.mediaSession.setActionHandler('play', () => { /* Code excerpted. */ });
         // navigator.mediaSession.setActionHandler('pause', () => { /* Code excerpted. */ });
         // navigator.mediaSession.setActionHandler('stop', () => { /* Code excerpted. */ });
@@ -124,7 +112,6 @@
           changeSong($currentPlaying.id, $songs.totalSongs, "increment");
         });
         // navigator.mediaSession.setActionHandler('seekto', () => { /* Code excerpted. */ });
-
         // navigator.mediaSession.setActionHandler('skipad', () => { /* Code excerpted. */ });
       }
     })();
@@ -147,14 +134,12 @@
         currentIndex = 1;
       }
     }
-
     $songs.songs.forEach((songs) => {
       if (songs.id == currentIndex) {
         $currentPlaying = songs;
       }
     });
   };
-
   const randomSong = () => {
     let myarray: number[] = [];
     for (let i = 1; i <= $songs.totalSongs; i++) {
@@ -167,7 +152,6 @@
     //console.log(myarray, myarray[random]);
     return myarray[random];
   };
-
   var start = Date.now();
   function draw() {
     requestAnimationFrame(draw);
@@ -175,7 +159,6 @@
     //console.log(elapsed / 1000);
     if (!audio.seeking) {
       audio.currentTime = audioFile.currentTime;
-
       if (audioFile.ended) {
         if (audio.shuffle) {
           var random = randomSong();
@@ -203,7 +186,6 @@
     document.getElementById("lyrics")?.addEventListener("click", () => {
       document.getElementById("musicOverlay")?.classList.toggle("lyricsResize");
     });
-
     let sliderSize;
     const min_max = (min: number, element: number, max: number) => {
       if (element <= min) {
@@ -214,7 +196,6 @@
         return element;
       }
     };
-
     document.getElementById("touch")?.addEventListener("touchstart", (e) => {
       document.getElementById("myRange_move")?.classList.remove("ontouch");
       document.getElementById("myRange_nomove")?.classList.add("ontouch");
@@ -227,7 +208,6 @@
         1
       );
     });
-
     document.getElementById("touch")?.addEventListener("touchmove", (e) => {
       sliderSize = document
         .getElementById("myRange_move")
@@ -238,27 +218,22 @@
         1
       );
     });
-
     document.getElementById("touch")?.addEventListener("touchend", (e) => {
       document.getElementById("myRange_move")?.classList.add("ontouch");
       document.getElementById("myRange_nomove")?.classList.remove("ontouch");
       audioFile.currentTime = varX * audio.totalDuration;
       //console.log(varX * audio.totalDuration);
     });
-
     let drag = false;
     document.getElementById("touch")?.addEventListener("mousedown", (e) => {
       document.getElementById("myRange_move")?.classList.remove("ontouch");
       document.getElementById("myRange_nomove")?.classList.add("ontouch");
-
       sliderSize = document
         .getElementById("myRange_move")
         ?.getBoundingClientRect();
-
       varX = min_max(0, (e.clientX - sliderSize?.left) / sliderSize?.width, 1);
       drag = true;
     });
-
     document.getElementById("touch")?.addEventListener("mousemove", (e) => {
       sliderSize = document
         .getElementById("myRange_move")
@@ -271,7 +246,6 @@
         );
       }
     });
-
     document.getElementById("touch")?.addEventListener("mouseup", (e) => {
       document.getElementById("myRange_move")?.classList.add("ontouch");
       document.getElementById("myRange_nomove")?.classList.remove("ontouch");
@@ -299,14 +273,11 @@
       </svg>
     </button>
   </div>
-
   <img src={$currentPlaying.image} id="albumImage" alt="" srcset="" />
-
   <div>
     <p id="song">{$currentPlaying.song}</p>
     <p id="artist">{$currentPlaying.artist}</p>
   </div>
-
   <div id="lyrics">
     <p class="lyricsLabel">Lyrics</p>
     <div class="lyricsLines">
@@ -327,7 +298,6 @@
       {/if}
     </div>
   </div>
-
   <div>
     <input
       type="range"
@@ -348,13 +318,11 @@
       id="myRange_nomove"
       bind:value={audio.currentTime}
     />
-
     <div class="slidertime">
       <p style="padding-left: 3px;">{fmtMSS(audio.currentTime)}</p>
       <p style="padding-right: 3px;">{fmtMSS(audio.totalDuration)}</p>
     </div>
   </div>
-
   <div>
     <button
       id="shuffleControl"
@@ -372,7 +340,7 @@
           xmlns="http://www.w3.org/2000/svg"
         >
           <path
-            class="colouredSvg"
+            class="colouredStroke"
             d="M16 18C14.423 18 12.9466 17.3826 11.8512 16.3346"
             stroke="#A8A8A8"
             stroke-width="2"
@@ -380,7 +348,7 @@
             stroke-linejoin="round"
           />
           <path
-            class="colouredSvg"
+            class="colouredStroke"
             d="M7.15475 8.05196C5.78876 6.76008 3.95637 6 2 6"
             stroke="#A8A8A8"
             stroke-width="2"
@@ -393,7 +361,7 @@
             fill="#A8A8A8"
           />
           <path
-            class="colouredSvg"
+            class="colouredStroke"
             d="M16 6V6C13.5778 6 11.3932 7.45643 10.4615 9.69231L8.92308 13.3846C7.75856 16.1795 5.02776 18 2 18V18"
             stroke="#A8A8A8"
             stroke-width="2"
@@ -537,7 +505,6 @@
       class="moreControls"
       on:click={() => {
         audio.repeat = !audio.repeat;
-
         audioFile.loop = audio.repeat;
       }}
     >
@@ -560,7 +527,7 @@
             fill="#A8A8A8"
           />
           <path
-            class="colouredSvg"
+            class="colouredStroke"
             d="M4 11V11C4 7.68629 6.68629 5 10 5V5H15"
             stroke="#A8A8A8"
             stroke-width="2"
@@ -568,7 +535,7 @@
             stroke-linejoin="round"
           />
           <path
-            class="colouredSvg"
+            class="colouredStroke"
             d="M19 12V12C19 15.3137 16.3137 18 13 18V18H8"
             stroke="#A8A8A8"
             stroke-width="2"

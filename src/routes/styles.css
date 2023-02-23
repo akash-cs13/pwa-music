@@ -608,5 +608,11 @@ body {
 
 path.colouredSvg {
   fill: var(--accentColor);
+}
+
+path.colouredStroke {
   stroke: var(--accentColor);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
