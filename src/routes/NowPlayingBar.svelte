@@ -64,6 +64,7 @@
         runOnceInitially = true;
         nowPlayingSong = "something";
       }
+
       //Media Session API
       if ("mediaSession" in navigator) {
         navigator.mediaSession.metadata = new MediaMetadata({
@@ -72,47 +73,30 @@
           artwork: [
             {
               src: $currentPlaying.image,
-              sizes: "96x96",
-              type: "image/png",
-            },
-            {
-              src: $currentPlaying.image,
-              sizes: "128x128",
-              type: "image/png",
-            },
-            {
-              src: $currentPlaying.image,
-              sizes: "192x192",
-              type: "image/png",
-            },
-            {
-              src: $currentPlaying.image,
-              sizes: "256x256",
-              type: "image/png",
-            },
-            {
-              src: $currentPlaying.image,
-              sizes: "384x384",
-              type: "image/png",
-            },
-            {
-              src: $currentPlaying.image,
-              sizes: "512x512",
-              type: "image/png",
             },
           ],
         });
-        // navigator.mediaSession.setActionHandler('play', () => { /* Code excerpted. */ });
-        // navigator.mediaSession.setActionHandler('pause', () => { /* Code excerpted. */ });
-        // navigator.mediaSession.setActionHandler('stop', () => { /* Code excerpted. */ });
+
+        function updatePositionState() {
+          if ("setPositionState" in navigator.mediaSession) {
+            navigator.mediaSession.setPositionState({
+              duration: audioFile.duration,
+              playbackRate: audioFile.playbackRate,
+              position: audioFile.currentTime,
+            });
+          }
+        }
+
         navigator.mediaSession.setActionHandler("previoustrack", () => {
           changeSong($currentPlaying.id, $songs.totalSongs, "decrement");
         });
         navigator.mediaSession.setActionHandler("nexttrack", () => {
           changeSong($currentPlaying.id, $songs.totalSongs, "increment");
         });
-        // navigator.mediaSession.setActionHandler('seekto', () => { /* Code excerpted. */ });
-        // navigator.mediaSession.setActionHandler('skipad', () => { /* Code excerpted. */ });
+
+        audioFile.addEventListener("ratechange", (event) => {
+          updatePositionState();
+        });
       }
     })();
   // @ts-ignore
@@ -155,7 +139,7 @@
   var start = Date.now();
   function draw() {
     requestAnimationFrame(draw);
-    var elapsed = Date.now() - start;
+    //var elapsed = Date.now() - start;
     //console.log(elapsed / 1000);
     if (!audio.seeking) {
       audio.currentTime = audioFile.currentTime;

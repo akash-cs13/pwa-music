@@ -11,6 +11,9 @@
   -webkit-tap-highlight-color: transparent;
   accent-color: var(--accentColor);
 }
+p {
+  cursor: default;
+}
 
 * {
   margin: 0;
@@ -570,6 +573,7 @@ body {
     width: 80vw;
     max-width: 400px;
     height: 100%;
+    max-height: 1200px;
 
     overflow-x: hidden;
     -ms-overflow-style: none; /* IE and Edge */

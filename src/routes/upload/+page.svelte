@@ -62,7 +62,13 @@
 <div class="addSongClass2">
   <div class="addSongClass">
     <label class="ytlinkLable" for="ytlink">Youtube Link</label>
-    <input type="text" id="ytlink" name="ytlink" class="ytlink" /><br /><br />
+    <input
+      type="text"
+      id="ytlink"
+      name="ytlink"
+      class="ytlink"
+      placeholder="broken... 😓, try uploading"
+    /><br /><br />
     <div class="lname">
       <label for="lname">
         <div class="lnameclass">
