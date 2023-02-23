@@ -1,9 +1,7 @@
 <script lang="ts">
   import album_art from "$lib/album/album.png";
-
-  import { getStorage, ref, getBlob, getBytes } from "firebase/storage";
+  import { getStorage, ref, getBlob } from "firebase/storage";
   import { app, currentPlaying } from "./stores";
-  import { openDB, deleteDB, wrap, unwrap } from "idb";
 
   interface currentInfo {
     audio: string;
@@ -24,28 +22,6 @@
     progress = "cached";
     return { audioBlob: myaudioBlob, imageBlob: myimageBlob };
   };
-
-  async function StorageDB(imgBlob, audioBlob) {
-    // const db = await openDB("MySongs", 1, {
-    //   upgrade(db, oldVersion, newVersion, transaction, event) {
-    //     const store = db.createObjectStore("songs", { keyPath: "id" });
-    //     store.createIndex("download", "song");
-    //   },
-    // });
-
-    const db = await openDB("MySongs", 1);
-
-    await db.add("songs", {
-      id: song.id,
-      song: song.song,
-      artist: song.artist,
-      image: imgBlob,
-      audio: audioBlob,
-    });
-
-    console.log(await db.get("songs", song.id));
-    db.close();
-  }
 </script>
 
 <div class="MusicCard">
@@ -83,7 +59,6 @@
 
           const my_audio = await MyDownload();
 
-          await StorageDB(my_audio.imageBlob, my_audio.audioBlob);
           //console.log(reader.readAsText(my_audio.imageBlob));
         }}
       >

@@ -2,7 +2,6 @@
   import "./styles.css";
   import { onMount } from "svelte";
   import { currentPlaying, songs } from "./stores";
-  import { openDB } from "idb";
 
   let audioFile = new Audio();
   let previousSongID: number;
@@ -35,25 +34,6 @@
     return ret;
   }
 
-  async function playsong() {
-    const db = await openDB("MySongs", 1, {
-      upgrade(db, oldVersion, newVersion, transaction, event) {
-        const store = db.createObjectStore("songs", { keyPath: "id" });
-        store.createIndex("download", "song");
-      },
-    });
-
-    //await db.add("songs", { id: 5, song: "Lilac", artist: "IU" });
-
-    //audioFile.src =  await db.get("songs", 4);
-    const response = await db.get("songs", 4);
-    console.log("response", response);
-
-    //audioFile.src = response.audio;
-
-    db.close();
-  }
-
   //if song already playing prevent it from playing fron start on click
   let nowPlayingSong = "none";
 
@@ -75,7 +55,6 @@
             audioFile.pause();
           }
           audioFile.src = $currentPlaying.audio;
-          playsong();
 
           audioFile.onloadedmetadata = () => {
             audio.totalDuration = audioFile.duration;
