@@ -2,6 +2,18 @@
   import "./styles.css";
   import NowPlayingBar from "./NowPlayingBar.svelte";
   import { currentPlaying } from "./stores";
+  import { openDB } from "idb";
+  import { onMount } from "svelte";
+
+  onMount(async () => {
+    const db = await openDB("MySongs", 1, {
+      upgrade(db) {
+        db.createObjectStore("songs", { keyPath: "id" });
+      },
+    });
+
+    db.close();
+  });
 </script>
 
 <svelte:head>

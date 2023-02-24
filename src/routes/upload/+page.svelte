@@ -131,7 +131,7 @@
                 const img = `data:${format};base64,${window.btoa(
                   base64String
                 )}`;
-
+                console.log(img);
                 $uploadSong.image = img;
               } else {
                 $uploadSong.image = "";

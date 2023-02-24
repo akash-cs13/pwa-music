@@ -1,7 +1,9 @@
 <script lang="ts">
   import album_art from "$lib/album/album.png";
   import { getStorage, ref, getBlob } from "firebase/storage";
-  import { app, currentPlaying } from "./stores";
+  import { app, currentPlaying, songs } from "./stores";
+  import { openDB, deleteDB, wrap, unwrap } from "idb";
+  import { onMount } from "svelte";
 
   interface currentInfo {
     audio: string;
@@ -9,19 +11,70 @@
     image: string;
     song: string;
     lyrics: string;
+    downloaded: boolean;
     id: number;
   }
-  let progress: string = "blah";
 
   export let song: currentInfo;
+
+  let progress: string = "blah";
+  console.log(song);
 
   const MyDownload = async () => {
     const storage = getStorage($app);
     const myaudioBlob = await getBlob(ref(storage, song.audio));
     const myimageBlob = await getBlob(ref(storage, song.image));
-    progress = "cached";
+    //progress = "cached";
     return { audioBlob: myaudioBlob, imageBlob: myimageBlob };
   };
+
+  function blobToBase64(blob: Blob) {
+    return new Promise((resolve, _) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  async function removeIndexedDB() {
+    const db = await openDB("MySongs", 1);
+    await db.delete("songs", song.id);
+    progress = "downlaod";
+    song.downloaded = false;
+    db.close();
+  }
+
+  async function storetoIndexedDB(blob: { audioBlob: Blob; imageBlob: Blob }) {
+    const db = await openDB("MySongs", 1);
+
+    const audioBase64 = await blobToBase64(blob.audioBlob);
+    const imageBase64 = await blobToBase64(blob.imageBlob);
+
+    //console.log(imageBase64, audioBase64);
+    await db.add("songs", {
+      id: song.id,
+      song: song.song,
+      artist: song.artist,
+      lyrics: song.lyrics,
+      audio: audioBase64,
+      image: imageBase64,
+      downloaded: true,
+    });
+    db.close();
+
+    progress = "cached";
+    song.downloaded = true;
+  }
+
+  onMount(() => {
+    console.log("mounted download=>", song.downloaded);
+    if (song.downloaded) {
+      progress = "cached";
+    }
+  });
+
+  export const prerender = false;
+  export const ssr = false;
 </script>
 
 <div class="MusicCard">
@@ -55,11 +108,19 @@
       <button
         on:click={async () => {
           //console.log("download ", song);
-          progress = "inProgress";
 
-          const my_audio = await MyDownload();
+          if (!song.downloaded) {
+            progress = "inProgress";
 
-          console.log(my_audio);
+            const my_audio = await MyDownload();
+            storetoIndexedDB(my_audio);
+
+            //console.log(my_audio);
+          } else if (song.downloaded) {
+            removeIndexedDB();
+          } else {
+            console.log("error");
+          }
         }}
       >
         {#if progress == "inProgress"}
