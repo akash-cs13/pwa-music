@@ -4,10 +4,22 @@
   import { onMount } from "svelte";
   import { app, uploadSong } from "../stores";
   import { getStorage, ref, uploadBytes } from "firebase/storage";
-  import { getFirestore, doc, setDoc } from "firebase/firestore";
+  import {
+    getFirestore,
+    doc,
+    setDoc,
+    getDocs,
+    collection,
+  } from "firebase/firestore";
+  import { goto } from "$app/navigation";
 
   const storage = getStorage($app);
   const db = getFirestore($app);
+  let startedUpload = false;
+
+  let progressLyrics = "Parsing Lyrics......";
+  let progressUploading: string = "";
+  let uploadedSongInfo: string = "";
 
   let albumImage: any = album_art;
   let GetImage: any;
@@ -49,9 +61,16 @@
       song: $uploadSong.song,
     };
 
-    await setDoc(doc(db, "Music", String($uploadSong.id)), docData);
+    const snapshot = await getDocs(collection(db, "Music"));
 
-    alert("Upload complete \nGo to home screen to play your uploaded song");
+    await setDoc(doc(db, "Music", String(snapshot.size + 1)), docData);
+
+    progressUploading = "Uploaded ✅";
+    uploadedSongInfo = uploadedSongInfo.concat(
+      $uploadSong.song + " uploaded with id:" + String(snapshot.size + 1)
+    );
+
+    //alert("Upload complete \nGo to home screen to play your uploaded song");
   };
 
   function convertTime(string: string) {
@@ -90,7 +109,8 @@
             console.log("line omitted: ", line);
           }
         }
-
+        progressLyrics = "Lyrics Parsed ✅";
+        progressUploading = "Uploading.......";
         return { type: "tlrc", data: data };
       };
 
@@ -162,117 +182,137 @@
   <div />
 </div>
 
-<div class="addSongClass3">
-  <div class="image-area">
-    <div />
+{#if startedUpload}
+  <div class="afterUpload">
+    <div>
+      <p>{progressLyrics}</p>
+      <p>{progressUploading}</p>
+      <p>{uploadedSongInfo}</p>
+    </div>
 
-    <img src={albumImage} alt="" srcset="" class="cover" />
+    <button
+      class="homeButton"
+      on:click={() => {
+        startedUpload = false;
+        goto("/");
+      }}><p>Home</p></button
+    >
+  </div>
+{:else}
+  <div class="addSongClass3">
+    <div class="image-area">
+      <div />
 
-    <label>
-      <input
-        type="file"
-        accept=".png, .jpg"
-        bind:files={GetImage}
-        style="display: none;"
-      />
+      <img src={albumImage} alt="" srcset="" class="cover" />
 
-      <svg
-        width="20"
-        height="20"
-        style="
+      <label>
+        <input
+          type="file"
+          accept=".png, .jpg"
+          bind:files={GetImage}
+          style="display: none;"
+        />
+
+        <svg
+          width="20"
+          height="20"
+          style="
       justify-self: center;
       align-self: center;"
-        viewBox="0 0 20 20"
+          viewBox="0 0 20 20"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M14.1831 0.733162L12.2904 2.6257L17.3741 7.70896L19.2668 5.81642C20.2444 4.83887 20.2444 3.25524 19.2668 2.27769L17.726 0.733162C16.7484 -0.244387 15.1647 -0.244387 14.187 0.733162H14.1831ZM11.4067 3.5094L2.29128 12.628C1.88459 13.0346 1.58739 13.5391 1.42315 14.0904L0.038834 18.7944C-0.0589286 19.1267 0.031013 19.4826 0.273464 19.725C0.515915 19.9674 0.871771 20.0574 1.20025 19.9635L5.90459 18.5793C6.45597 18.4151 6.96043 18.1179 7.36712 17.7112L16.4903 8.59266L11.4067 3.5094Z"
+            fill="white"
+          />
+        </svg>
+      </label>
+    </div>
+    <div class="text-area">
+      <div class="full">
+        <label for="song-field">Name</label>
+        <input
+          type="text"
+          name="song-field"
+          class="input-field"
+          id=""
+          bind:value={$uploadSong.song}
+        />
+      </div>
+      <div class="full">
+        <label for="artist-field">Artist</label>
+        <input
+          type="text"
+          name="artist-field"
+          class="input-field"
+          id=""
+          bind:value={$uploadSong.artist}
+        />
+      </div>
+      <div class="full">
+        <label for="lyrics-field" class="half"
+          >Lyrics
+          <label style="display: flex;">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M7 0V7M7 14V7M7 7H12.5M7 7H1.5H0H7ZM7 7H14"
+                stroke="white"
+                stroke-width="2"
+              />
+            </svg>
+
+            <input
+              type="file"
+              accept=".lrc"
+              bind:files={GetLyrics}
+              style="display: none;"
+            />
+          </label>
+        </label>
+        <textarea
+          name="lyrics-field"
+          class="input-field lyrics-field"
+          id=""
+          cols="30"
+          rows="3"
+          bind:value={$uploadSong.lyrics.data}
+        />
+      </div>
+    </div>
+
+    <button
+      class="upload"
+      on:click={() => {
+        startedUpload = true;
+        //$uploadSong.lyrics = JSON.stringify(LyricsParser($uploadSong.lyrics));
+        //console.log($uploadSong.lyrics);
+        $uploadSong.lyrics = LyricsParser($uploadSong.lyrics);
+        UploadToCloud();
+      }}
+      ><p>Upload</p>
+      <svg
+        width="46"
+        height="33"
+        viewBox="0 0 46 33"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
         <path
-          d="M14.1831 0.733162L12.2904 2.6257L17.3741 7.70896L19.2668 5.81642C20.2444 4.83887 20.2444 3.25524 19.2668 2.27769L17.726 0.733162C16.7484 -0.244387 15.1647 -0.244387 14.187 0.733162H14.1831ZM11.4067 3.5094L2.29128 12.628C1.88459 13.0346 1.58739 13.5391 1.42315 14.0904L0.038834 18.7944C-0.0589286 19.1267 0.031013 19.4826 0.273464 19.725C0.515915 19.9674 0.871771 20.0574 1.20025 19.9635L5.90459 18.5793C6.45597 18.4151 6.96043 18.1179 7.36712 17.7112L16.4903 8.59266L11.4067 3.5094Z"
+          d="M10.35 32.6875C4.63594 32.6875 0 28.0264 0 22.2812C0 17.743 2.88937 13.884 6.91437 12.4604C6.90719 12.2652 6.9 12.0701 6.9 11.875C6.9 5.48672 12.0462 0.3125 18.4 0.3125C22.6622 0.3125 26.3781 2.63945 28.3691 6.1082C29.4616 5.37109 30.7841 4.9375 32.2 4.9375C36.0094 4.9375 39.1 8.04492 39.1 11.875C39.1 12.7566 38.9347 13.5949 38.64 14.3754C42.8375 15.2281 46 18.9643 46 23.4375C46 28.5467 41.8816 32.6875 36.8 32.6875H10.35ZM16.0281 17.0059C15.3525 17.6852 15.3525 18.7836 16.0281 19.4557C16.7037 20.1277 17.7962 20.135 18.4647 19.4557L21.2678 16.6373V26.3281C21.2678 27.2893 22.0369 28.0625 22.9928 28.0625C23.9487 28.0625 24.7178 27.2893 24.7178 26.3281V16.6373L27.5209 19.4557C28.1966 20.135 29.2891 20.135 29.9575 19.4557C30.6259 18.7764 30.6331 17.6779 29.9575 17.0059L24.2075 11.2246C23.5319 10.5453 22.4394 10.5453 21.7709 11.2246L16.0209 17.0059H16.0281Z"
           fill="white"
         />
-      </svg>
-    </label>
-  </div>
-  <div class="text-area">
-    <div class="full">
-      <label for="song-field">Name</label>
-      <input
-        type="text"
-        name="song-field"
-        class="input-field"
-        id=""
-        bind:value={$uploadSong.song}
-      />
-    </div>
-    <div class="full">
-      <label for="artist-field">Artist</label>
-      <input
-        type="text"
-        name="artist-field"
-        class="input-field"
-        id=""
-        bind:value={$uploadSong.artist}
-      />
-    </div>
-    <div class="full">
-      <label for="lyrics-field" class="half"
-        >Lyrics
-        <label style="display: flex;">
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 14 14"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M7 0V7M7 14V7M7 7H12.5M7 7H1.5H0H7ZM7 7H14"
-              stroke="white"
-              stroke-width="2"
-            />
-          </svg>
-
-          <input
-            type="file"
-            accept=".lrc"
-            bind:files={GetLyrics}
-            style="display: none;"
-          />
-        </label>
-      </label>
-      <textarea
-        name="lyrics-field"
-        class="input-field lyrics-field"
-        id=""
-        cols="30"
-        rows="3"
-        bind:value={$uploadSong.lyrics.data}
-      />
-    </div>
-  </div>
-  <button
-    class="upload"
-    on:click={() => {
-      // $uploadSong.lyrics = JSON.stringify(LyricsParser($uploadSong.lyrics));
-      // console.log($uploadSong.lyrics);
-      $uploadSong.lyrics = LyricsParser($uploadSong.lyrics);
-      UploadToCloud();
-    }}
-    ><p>Upload</p>
-    <svg
-      width="46"
-      height="33"
-      viewBox="0 0 46 33"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
+      </svg></button
     >
-      <path
-        d="M10.35 32.6875C4.63594 32.6875 0 28.0264 0 22.2812C0 17.743 2.88937 13.884 6.91437 12.4604C6.90719 12.2652 6.9 12.0701 6.9 11.875C6.9 5.48672 12.0462 0.3125 18.4 0.3125C22.6622 0.3125 26.3781 2.63945 28.3691 6.1082C29.4616 5.37109 30.7841 4.9375 32.2 4.9375C36.0094 4.9375 39.1 8.04492 39.1 11.875C39.1 12.7566 38.9347 13.5949 38.64 14.3754C42.8375 15.2281 46 18.9643 46 23.4375C46 28.5467 41.8816 32.6875 36.8 32.6875H10.35ZM16.0281 17.0059C15.3525 17.6852 15.3525 18.7836 16.0281 19.4557C16.7037 20.1277 17.7962 20.135 18.4647 19.4557L21.2678 16.6373V26.3281C21.2678 27.2893 22.0369 28.0625 22.9928 28.0625C23.9487 28.0625 24.7178 27.2893 24.7178 26.3281V16.6373L27.5209 19.4557C28.1966 20.135 29.2891 20.135 29.9575 19.4557C30.6259 18.7764 30.6331 17.6779 29.9575 17.0059L24.2075 11.2246C23.5319 10.5453 22.4394 10.5453 21.7709 11.2246L16.0209 17.0059H16.0281Z"
-        fill="white"
-      />
-    </svg></button
-  >
-</div>
+  </div>
+{/if}
 
 <style>
   .addSongClass3 {
@@ -326,6 +366,8 @@
     align-items: center;
     justify-content: space-between;
     padding: 0% 10%;
+    margin-top: 5%;
+    align-self: flex-start;
   }
 
   .addSongClass3 .image-area {
@@ -399,5 +441,26 @@
 
   textarea {
     resize: none;
+  }
+
+  .afterUpload {
+    width: 60%;
+    padding: 20%;
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+  }
+
+  .homeButton {
+    width: 100%;
+    height: 70px;
+    background: var(--accentColor);
+    border: 3px solid var(--accentColor);
+    border-radius: 14px;
+    justify-self: center;
+    color: var(--TextColour2);
+    font-family: "Poppins", sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    align-self: flex-end;
   }
 </style>
