@@ -38,15 +38,6 @@
   //if song already playing prevent it from playing fron start on click
   let nowPlayingSong = "none";
 
-  async function indexedDB(id: number) {
-    const db = await openDB("MySongs", 1);
-
-    const response = await db.get("songs", id);
-
-    db.close();
-    return response.audio;
-  }
-
   let runOnceInitially = false;
   $: $currentPlaying,
     (async () => {
@@ -65,14 +56,9 @@
             audioFile.pause();
           }
 
-          if ($currentPlaying.downloaded) {
-            // @ts-ignore
+          //console.log($currentPlaying);
 
-            audioFile.src = await indexedDB($currentPlaying.id);
-            console.log($currentPlaying);
-          } else {
-            audioFile.src = $currentPlaying.audio;
-          }
+          audioFile.src = $currentPlaying.audio;
 
           audioFile.onloadedmetadata = () => {
             audio.totalDuration = audioFile.duration;

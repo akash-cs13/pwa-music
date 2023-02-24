@@ -1,7 +1,8 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
+  import { openDB } from "idb";
   import { onMount } from "svelte";
-  import { songs, uploadSong } from "../stores";
+  import { downloadStores, songs, uploadSong } from "../stores";
 
   $uploadSong = {
     audio: "",
@@ -14,11 +15,22 @@
 
   let fileName: string;
   let files: any;
-  let jsmediatags: any = window.jsmediatags;
+  let jsmediatags: any;
+  let totalSongsStored: number = 0;
+
+  const songsStored = async () => {
+    const db = await openDB("MySongs", 1);
+
+    const response = await db.getAll("songs");
+
+    db.close();
+    totalSongsStored = response.length;
+  };
 
   onMount(() => {
     fileName = "Internal Storage";
     jsmediatags = window.jsmediatags;
+    songsStored();
   });
 
   $: if (files) {
@@ -61,14 +73,29 @@
 
 <div class="addSongClass2">
   <div class="addSongClass">
-    <label class="ytlinkLable" for="ytlink">Youtube Link</label>
-    <input
-      type="text"
+    <label class="ytlinkLable" for="ytlink"
+      >{totalSongsStored} songs stored:</label
+    >
+    <button
       id="ytlink"
       name="ytlink"
       class="ytlink"
-      placeholder="broken... 😓, try uploading"
-    /><br /><br />
+      on:click={async () => {
+        const db = await openDB("MySongs", 1);
+
+        const response = await db.getAll("songs");
+
+        if (response.length > 0) {
+          response.forEach(async (r) => {
+            await db.delete("songs", r.id);
+          });
+        }
+
+        db.close();
+        $downloadStores = !$downloadStores;
+        songsStored();
+      }}><p>Clear Storage</p></button
+    ><br /><br />
     <div class="lname">
       <label for="lname">
         <div class="lnameclass">

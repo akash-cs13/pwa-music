@@ -1,8 +1,8 @@
 <script lang="ts">
   import album_art from "$lib/album/album.png";
   import { getStorage, ref, getBlob } from "firebase/storage";
-  import { app, currentPlaying, songs } from "./stores";
-  import { openDB, deleteDB, wrap, unwrap } from "idb";
+  import { app, currentPlaying, downloadStores } from "./stores";
+  import { openDB } from "idb";
   import { onMount } from "svelte";
 
   interface currentInfo {
@@ -17,8 +17,19 @@
 
   export let song: currentInfo;
 
+  let altimage = "";
+
   let progress: string = "blah";
-  console.log(song);
+  //console.log(song);
+
+  async function setdownloadedInfo() {
+    const db = await openDB("MySongs", 1);
+
+    const response = await db.get("songs", song.id);
+
+    db.close();
+    return response;
+  }
 
   const MyDownload = async () => {
     const storage = getStorage($app);
@@ -66,22 +77,45 @@
     song.downloaded = true;
   }
 
-  onMount(() => {
-    console.log("mounted download=>", song.downloaded);
-    if (song.downloaded) {
-      progress = "cached";
-    }
-  });
+  async function indexedDB() {
+    const idb = await openDB("MySongs", 1);
 
-  export const prerender = false;
-  export const ssr = false;
+    const inDatabase = await idb.get("songs", song.id);
+
+    if (inDatabase != undefined) {
+      progress = "cached";
+      song.downloaded = true;
+      altimage = inDatabase.image;
+    }
+    idb.close();
+  }
+
+  $: $downloadStores,
+    (async () => {
+      const db = await openDB("MySongs", 1);
+
+      const response = await db.get("songs", song.id);
+      if (response == undefined) {
+        song.downloaded = false;
+      }
+
+      db.close();
+    })();
+
+  onMount(() => {
+    indexedDB();
+  });
 </script>
 
 <div class="MusicCard">
   <div class="clickable">
     <button
-      on:click={() => {
-        $currentPlaying = song;
+      on:click={async () => {
+        if (song.downloaded) {
+          $currentPlaying = await setdownloadedInfo();
+        } else {
+          $currentPlaying = song;
+        }
       }}
       style="height: 100%; width: 100%;"
     />
@@ -94,7 +128,7 @@
   height: 84px;  filter: drop-shadow(0px 6px 20px rgba(0, 0, 0, 0.15));
   border-radius: 25px;"
         src={song.image}
-        alt={album_art}
+        alt={altimage}
         srcset=""
       />
     </div>

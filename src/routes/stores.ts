@@ -50,6 +50,8 @@ let songslist:songInfo = {
     totalSongs: 0,
     songs: []
   };
+
+  let downloadUpdate: boolean = false;
   
 const firebaseConfig = {
     apiKey: "AIzaSyDLOcgayXHtMcmDfWwS-2YZ0EqDDUWzSy8",
@@ -68,5 +70,7 @@ export const app = writable(initializeApp(firebaseConfig));
 export const currentPlaying = writable(temp);
 
 export let songToUpload = writable(songUplaod);
+
+export let downloadStores = writable(downloadUpdate)
 
 export let uploadSong = writable(uploadInfos)

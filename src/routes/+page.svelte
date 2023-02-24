@@ -5,7 +5,7 @@
   import { onMount } from "svelte";
   import { app, songs } from "./stores";
   import { getStorage, ref, getDownloadURL } from "firebase/storage";
-  import { openDB, deleteDB, wrap, unwrap } from "idb";
+  import { openDB } from "idb";
 
   interface mydata {
     audio: string;
@@ -17,24 +17,18 @@
     downloaded: boolean;
   }
 
-  async function indexedDB(songs: { totalSongs: number; songs: mydata[] }) {
-    const idb = await openDB("MySongs", 1);
+  async function offlineData() {
+    const db = await openDB("MySongs", 1);
 
-    songs.songs.forEach(async (song) => {
-      const checkIfPresent = await idb.get("songs", song.id);
-      if (checkIfPresent != undefined) {
-        song.downloaded = true;
-      }
-    });
+    const response = await db.getAll("songs");
 
-    idb.close();
-    return songs;
+    db.close();
+    return { totalSongs: response.length, songs: response };
   }
 
   async function MyData() {
     const db = getFirestore($app);
     const storage = getStorage($app);
-    const idb = await openDB("MySongs", 1);
 
     const querySnapshot = await getDocs(collection(db, "Music"));
 
@@ -67,10 +61,18 @@
   }
 
   onMount(async () => {
-    if ($songs.totalSongs == 0) {
-      const temp = await MyData();
-      const wait = await indexedDB(temp);
-      $songs = await wait;
+    try {
+      if (navigator.onLine) {
+        if ($songs.totalSongs == 0) {
+          $songs = await MyData();
+        }
+      } else {
+        $songs = await offlineData();
+      }
+    } finally {
+      if ($songs.totalSongs == 0) {
+        $songs = await MyData();
+      }
     }
   });
 </script>

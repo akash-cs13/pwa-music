@@ -232,10 +232,11 @@ body {
   box-shadow: none;
   background: none;
   color: var(--TextColor);
-  font-size: 18px;
+  font-size: 16px;
   display: flex;
   justify-content: space-between;
 }
+
 #musicOverlay.fullScreen div:nth-child(5) .nomove {
   grid-area: slider;
 }
@@ -380,15 +381,16 @@ body {
 }
 
 .ytlink {
-  width: 245px;
+  width: 285px;
   height: 70px;
-  background: var(--mainColor2);
-  border: 3px solid var(--accentColor);
+
+  background: rgb(158, 64, 64);
+  border: 3px solid red;
   border-radius: 14px;
-  color: var(--TextColor2);
-  padding: 0px 20px;
+  font-family: "Poppins", sans-serif;
+  font-weight: 700;
   font-size: 16px;
-  font-weight: 500;
+  color: var(--TextColor);
 }
 
 .ytlinkLable {
@@ -425,7 +427,7 @@ body {
 .nextButton {
   width: 285px;
   height: 70px;
-  border: 3px solid var(--accentColor);
+
   background: var(--accentColor);
   border: 3px solid var(--accentColor);
   border-radius: 14px;
