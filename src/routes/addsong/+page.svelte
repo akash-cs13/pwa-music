@@ -405,15 +405,6 @@
     align-items: center;
   }
 
-  .addSongClass3 .text-area div.half {
-    display: grid;
-    width: 100%;
-    grid-auto-flow: column;
-    grid-template-columns: 20% calc(62% - 20px) 13%;
-    justify-content: center;
-    align-items: center;
-  }
-
   .addSongClass3 .text-area div.full label label {
     width: 41px;
     height: 36px;

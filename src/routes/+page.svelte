@@ -63,15 +63,19 @@
   onMount(async () => {
     try {
       if (navigator.onLine) {
+        console.log("ran online");
         if ($songs.totalSongs == 0) {
           $songs = await MyData();
         }
       } else {
+        console.log("offline");
         $songs = await offlineData();
       }
     } finally {
+      console.log("ran finally block");
       if ($songs.totalSongs == 0) {
         $songs = await MyData();
+        console.log("ran if inside finally");
       }
     }
   });

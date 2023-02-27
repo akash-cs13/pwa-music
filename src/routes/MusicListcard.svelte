@@ -104,6 +104,7 @@
 
   onMount(() => {
     indexedDB();
+    console.log(song.song, progress, song.downloaded);
   });
 </script>
 
@@ -157,7 +158,25 @@
           }
         }}
       >
-        {#if progress == "inProgress"}
+        {#if song.downloaded}
+          <svg
+            width="34"
+            height="34"
+            viewBox="0 0 34 34"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="17"
+              cy="17"
+              r="16"
+              fill="white"
+              stroke="white"
+              stroke-width="2"
+            />
+            <path d="M9 17.5L14 22.5L25 12" stroke="black" stroke-width="2" />
+          </svg>
+        {:else if progress == "inProgress"}
           <svg
             width="34"
             height="34"
@@ -178,24 +197,6 @@
               stroke="white"
               stroke-width="2"
             />
-          </svg>
-        {:else if progress == "cached"}
-          <svg
-            width="34"
-            height="34"
-            viewBox="0 0 34 34"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <circle
-              cx="17"
-              cy="17"
-              r="16"
-              fill="white"
-              stroke="white"
-              stroke-width="2"
-            />
-            <path d="M9 17.5L14 22.5L25 12" stroke="black" stroke-width="2" />
           </svg>
         {:else}
           <svg
