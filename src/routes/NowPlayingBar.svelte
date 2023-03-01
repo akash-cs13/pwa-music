@@ -2,6 +2,7 @@
   import "./styles.css";
   import { onMount } from "svelte";
   import { currentPlaying, songs } from "./stores";
+  import { openDB } from "idb";
 
   let audioFile = new Audio();
   let previousSongID: number;
@@ -54,6 +55,9 @@
           if (audioFile.paused == false) {
             audioFile.pause();
           }
+
+          //console.log($currentPlaying);
+
           audioFile.src = $currentPlaying.audio;
 
           audioFile.onloadedmetadata = () => {

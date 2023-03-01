@@ -5,6 +5,7 @@
   import { onMount } from "svelte";
   import { app, songs } from "./stores";
   import { getStorage, ref, getDownloadURL } from "firebase/storage";
+  import { openDB } from "idb";
 
   interface mydata {
     audio: string;
@@ -13,6 +14,16 @@
     song: string;
     lyrics: any;
     id: number;
+    downloaded: boolean;
+  }
+
+  async function offlineData() {
+    const db = await openDB("MySongs", 1);
+
+    const response = await db.getAll("songs");
+
+    db.close();
+    return { totalSongs: response.length, songs: response };
   }
 
   async function MyData() {
@@ -27,6 +38,7 @@
       if (parseInt(doc.id) > count) {
         count = parseInt(doc.id);
       }
+
       temp.push({
         audio: doc.data().audio,
         artist: doc.data().artist,
@@ -34,6 +46,7 @@
         song: doc.data().song,
         lyrics: JSON.parse(doc.data().lyrics),
         id: parseInt(doc.id),
+        downloaded: false,
       });
     });
     const temp2 = await temp;
@@ -48,8 +61,22 @@
   }
 
   onMount(async () => {
-    if ($songs.totalSongs == 0) {
-      $songs = await MyData();
+    try {
+      if (navigator.onLine) {
+        console.log("ran online");
+        if ($songs.totalSongs == 0) {
+          $songs = await MyData();
+        }
+      } else {
+        console.log("offline");
+        $songs = await offlineData();
+      }
+    } finally {
+      console.log("ran finally block");
+      if ($songs.totalSongs == 0) {
+        $songs = await MyData();
+        console.log("ran if inside finally");
+      }
     }
   });
 </script>

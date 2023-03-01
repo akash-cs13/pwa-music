@@ -1,7 +1,8 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
+  import { openDB } from "idb";
   import { onMount } from "svelte";
-  import { songs, uploadSong } from "../stores";
+  import { downloadStores, songs, uploadSong } from "../stores";
 
   $uploadSong = {
     audio: "",
@@ -12,13 +13,23 @@
     id: $songs.totalSongs + 1,
   };
 
-  let fileName: string;
+  let fileName: string = "Internal Storage";
   let files: any;
-  let jsmediatags: any = window.jsmediatags;
+  let jsmediatags: any;
+  let totalSongsStored: number = 0;
+
+  const songsStored = async () => {
+    const db = await openDB("MySongs", 1);
+
+    const response = await db.getAll("songs");
+
+    db.close();
+    totalSongsStored = response.length;
+  };
 
   onMount(() => {
-    fileName = "Internal Storage";
     jsmediatags = window.jsmediatags;
+    songsStored();
   });
 
   $: if (files) {
@@ -61,14 +72,29 @@
 
 <div class="addSongClass2">
   <div class="addSongClass">
-    <label class="ytlinkLable" for="ytlink">Youtube Link</label>
-    <input
-      type="text"
+    <label class="ytlinkLable" for="ytlink"
+      >{totalSongsStored} songs stored:</label
+    >
+    <button
       id="ytlink"
       name="ytlink"
       class="ytlink"
-      placeholder="broken... 😓, try uploading"
-    /><br /><br />
+      on:click={async () => {
+        const db = await openDB("MySongs", 1);
+
+        const response = await db.getAll("songs");
+
+        if (response.length > 0) {
+          response.forEach(async (r) => {
+            await db.delete("songs", r.id);
+          });
+        }
+
+        db.close();
+        $downloadStores = !$downloadStores;
+        songsStored();
+      }}><p>Clear Storage</p></button
+    ><br /><br />
     <div class="lname">
       <label for="lname">
         <div class="lnameclass">
@@ -99,68 +125,72 @@
       position: absolute;"
       /><br /><br />
     </div>
-    <button
-      class="nextButton"
-      on:click={() => {
-        jsmediatags.read($uploadSong.audio, {
-          onSuccess: function (tag) {
-            //console.log(tag);
-            try {
-              //console.log(typeof tag.tags.title, tag.tags.title == undefined);
-              if (tag.tags.title != undefined) {
-                $uploadSong.song = tag.tags.title;
-              } else {
-                $uploadSong.song = fileName;
-              }
-
-              if (tag.tags.artist != undefined) {
-                $uploadSong.artist = tag.tags.artist;
-              }
-
-              if (tag.tags.lyrics != undefined) {
-                $uploadSong.lyrics = { type: "lrc", data: tag.tags.lyrics };
-              }
-
-              if (tag.tags.picture != undefined) {
-                const { data, format } = tag.tags.picture;
-
-                let base64String = "";
-                for (let i = 0; i < data.length; i++) {
-                  base64String += String.fromCharCode(data[i]);
+    {#if fileName == "Internal Storage"}
+      <div style="display: block; width: 280px; height: 72px" />
+    {:else}
+      <button
+        class="nextButton"
+        on:click={() => {
+          jsmediatags.read($uploadSong.audio, {
+            onSuccess: function (tag) {
+              //console.log(tag);
+              try {
+                //console.log(typeof tag.tags.title, tag.tags.title == undefined);
+                if (tag.tags.title != undefined) {
+                  $uploadSong.song = tag.tags.title;
+                } else {
+                  $uploadSong.song = fileName;
                 }
-                const img = `data:${format};base64,${window.btoa(
-                  base64String
-                )}`;
 
-                $uploadSong.image = img;
-              } else {
-                $uploadSong.image = "";
+                if (tag.tags.artist != undefined) {
+                  $uploadSong.artist = tag.tags.artist;
+                }
+
+                if (tag.tags.lyrics != undefined) {
+                  $uploadSong.lyrics = { type: "lrc", data: tag.tags.lyrics };
+                }
+
+                if (tag.tags.picture != undefined) {
+                  const { data, format } = tag.tags.picture;
+
+                  let base64String = "";
+                  for (let i = 0; i < data.length; i++) {
+                    base64String += String.fromCharCode(data[i]);
+                  }
+                  const img = `data:${format};base64,${window.btoa(
+                    base64String
+                  )}`;
+                  console.log(img);
+                  $uploadSong.image = img;
+                } else {
+                  $uploadSong.image = "";
+                }
+              } catch (error) {
+                console.log(error);
               }
-            } catch (error) {
+            },
+            onError: function (error) {
               console.log(error);
-            }
-          },
-          onError: function (error) {
-            console.log(error);
-          },
-        });
-        goto("/addsong");
-      }}
-      ><div class="nextButtonClass">
-        <p>Next</p>
-        <svg
-          width="19"
-          height="33"
-          viewBox="0 0 19 33"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M18.205 14.5586C19.265 15.6324 19.265 17.3762 18.205 18.45L4.63658 32.1946C3.57655 33.2684 1.85505 33.2684 0.795023 32.1946C-0.265008 31.1208 -0.265008 29.377 0.795023 28.3032L12.4469 16.5L0.803504 4.6968C-0.256528 3.623 -0.256528 1.87915 0.803504 0.805349C1.86353 -0.26845 3.58503 -0.26845 4.64506 0.805349L18.2135 14.55L18.205 14.5586Z"
-            fill="white"
-          />
-        </svg>
-      </div></button
-    >
+            },
+          });
+          goto("/addsong");
+        }}
+        ><div class="nextButtonClass">
+          <p>Extract</p>
+          <svg
+            width="19"
+            height="33"
+            viewBox="0 0 19 33"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M18.205 14.5586C19.265 15.6324 19.265 17.3762 18.205 18.45L4.63658 32.1946C3.57655 33.2684 1.85505 33.2684 0.795023 32.1946C-0.265008 31.1208 -0.265008 29.377 0.795023 28.3032L12.4469 16.5L0.803504 4.6968C-0.256528 3.623 -0.256528 1.87915 0.803504 0.805349C1.86353 -0.26845 3.58503 -0.26845 4.64506 0.805349L18.2135 14.55L18.205 14.5586Z"
+              fill="white"
+            />
+          </svg>
+        </div></button
+      >
+    {/if}
   </div>
 </div>

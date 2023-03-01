@@ -6,6 +6,7 @@ interface currentInfo{
     artist: string,
     image: string,
     song: string,
+    downloaded: boolean,
     lyrics: any,
     id: number,
 }
@@ -16,6 +17,7 @@ interface uploadInfo{
   image: any,
   song: string,
   lyrics: any,
+  downloaded: boolean,
   id: number,
 }
 
@@ -25,6 +27,7 @@ const temp: currentInfo = {
     image: "none",
     song: "none",
     lyrics: "none",
+    downloaded: false,
     id: 0
 };
 interface songInfo{
@@ -37,7 +40,7 @@ interface songInfo{
           lyrics: string;
           id: number;
           downloaded: boolean;
-          indexdb: string;
+          
         }[];
       }
       
@@ -47,6 +50,8 @@ let songslist:songInfo = {
     totalSongs: 0,
     songs: []
   };
+
+  let downloadUpdate: boolean = false;
   
 const firebaseConfig = {
     apiKey: "AIzaSyDLOcgayXHtMcmDfWwS-2YZ0EqDDUWzSy8",
@@ -65,5 +70,7 @@ export const app = writable(initializeApp(firebaseConfig));
 export const currentPlaying = writable(temp);
 
 export let songToUpload = writable(songUplaod);
+
+export let downloadStores = writable(downloadUpdate)
 
 export let uploadSong = writable(uploadInfos)
