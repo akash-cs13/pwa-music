@@ -6,7 +6,6 @@
   import { app, songs } from "./stores";
   import { getStorage, ref, getDownloadURL } from "firebase/storage";
   import { openDB } from "idb";
-
   interface mydata {
     audio: string;
     artist: string;
@@ -16,29 +15,22 @@
     id: number;
     downloaded: boolean;
   }
-
   async function offlineData() {
     const db = await openDB("MySongs", 1);
-
     const response = await db.getAll("songs");
-
     db.close();
     return { totalSongs: response.length, songs: response };
   }
-
   async function MyData() {
     const db = getFirestore($app);
     const storage = getStorage($app);
-
     const querySnapshot = await getDocs(collection(db, "Music"));
-
     let temp: mydata[] = [];
     let count = 0;
     querySnapshot.forEach(async (doc) => {
       if (parseInt(doc.id) > count) {
         count = parseInt(doc.id);
       }
-
       temp.push({
         audio: doc.data().audio,
         artist: doc.data().artist,
@@ -50,7 +42,6 @@
       });
     });
     const temp2 = await temp;
-
     for (const element of temp2) {
       const imageURL = await getDownloadURL(ref(storage, element.image));
       const audioURL = await getDownloadURL(ref(storage, element.audio));
@@ -59,7 +50,6 @@
     }
     return { totalSongs: count, songs: temp2 };
   }
-
   onMount(async () => {
     try {
       if (navigator.onLine) {

@@ -396,10 +396,10 @@ c15 -1 14 -3 -2 -15 -26 -19 -42 -19 -26 0 8 9 9 15 2 15 -6 0 -14 -4 -17 -10
     </g>
   </svg>
   <div>
-    <h1 style="font-size: 50px; text-align: center; color: #000000">
+    <h1 style="font-size: 50px; text-align: center;">
       Oops, {$page.status}
     </h1>
-    <h3 style="text-align: center; color: #000000">{$page.error?.message}</h3>
+    <h3 style="text-align: center;">{$page.error?.message}</h3>
   </div>
   <button
     class="homeButton"
