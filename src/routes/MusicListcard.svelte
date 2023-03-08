@@ -1,5 +1,4 @@
 <script lang="ts">
-  import album_art from "$lib/album/album.png";
   import { getStorage, ref, getBlob } from "firebase/storage";
   import { app, currentPlaying, downloadStores } from "./stores";
   import { openDB } from "idb";
@@ -104,7 +103,7 @@
 
   onMount(() => {
     indexedDB();
-    console.log(song.song, progress, song.downloaded);
+    //console.log(song.song, progress, song.downloaded);
   });
 </script>
 

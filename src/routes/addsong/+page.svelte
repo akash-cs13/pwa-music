@@ -1,6 +1,6 @@
 <script lang="ts">
   import "../styles.css";
-  import album_art from "$lib/album/album.png";
+  //import album_art from "$lib/album/album.png";
   import { onMount } from "svelte";
   import { app, uploadSong } from "../stores";
   import { getStorage, ref, uploadBytes } from "firebase/storage";
@@ -12,6 +12,7 @@
     collection,
   } from "firebase/firestore";
   import { goto } from "$app/navigation";
+  let album_art = "/album/album.png";
 
   const storage = getStorage($app);
   const db = getFirestore($app);
@@ -208,7 +209,7 @@
       <label>
         <input
           type="file"
-          accept=".png, .jpg"
+          accept=".png, .jpg, .jpeg"
           bind:files={GetImage}
           style="display: none;"
         />

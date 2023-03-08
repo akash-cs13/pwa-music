@@ -10,7 +10,7 @@ const config: UserConfig = {
 			srcDir: './src',
 				mode: 'development',
 				strategies: 'injectManifest',
-				filename: 'prompt-sw.ts',
+				filename: 'prompt-sw.js',
 				scope: '/',
 				base: '/',
 			manifest: {
@@ -31,18 +31,20 @@ const config: UserConfig = {
 						src: '/svelteify.png',
 						sizes: '512x512',
 						type: 'image/png',
+						purpose: 'any'
 					},
 					{
 						src: '/svelteify.png',
 						sizes: '512x512',
 						type: 'image/png',
-						purpose: 'any maskable',
+						purpose: 'maskable',
 					},
 				],
 			},
 			
 			injectManifest: {
-				globPatterns: ['client/**/*.{js,css,ico,png,svg,webp,woff,woff2}']
+				globPatterns: ['client/**/*.{js,css,ico,png,svg,webp,woff,woff2}'],
+				
 			},
 			devOptions: {
 				enabled: true,

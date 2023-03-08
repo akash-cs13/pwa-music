@@ -7,16 +7,17 @@
       //    console.log('Checking for sw update')
       //    r.update()
       // }, 20000 /* 20s for testing purposes */)
-      console.log(`SW Registered: ${r}`);
+      console.log(`Reload SW Registered: ${r}`);
     },
     onRegisterError(error) {
       console.log("SW registration error", error);
     },
   });
   const close = () => {
-    offlineReady.set(true);
+    offlineReady.set(false);
     needRefresh.set(false);
   };
+
   $: toast = $offlineReady || $needRefresh;
 </script>
 
@@ -48,13 +49,15 @@
     z-index: 2;
     text-align: left;
     box-shadow: 3px 4px 5px 0 #8885;
-    background-color: white;
+    background-color: var(--mainColor2);
   }
   .pwa-toast .message {
     margin-bottom: 8px;
   }
   .pwa-toast button {
-    border: 1px solid #8885;
+    border: 1px solid var(--accentColor);
+    color: var(--TextColor);
+    background-color: var(--accentColor);
     outline: none;
     margin-right: 5px;
     border-radius: 2px;

@@ -15,22 +15,9 @@
 
     db.close();
   };
-
+  let ReloadPrompt;
   onMount(async () => {
     await createIDB();
-
-    if (pwaInfo) {
-      const { registerSW } = await import("virtual:pwa-register");
-      registerSW({
-        immediate: true,
-        onRegistered(r) {
-          console.log(`SW Registered: ${r}`);
-        },
-        onRegisterError(error) {
-          console.log("SW registration error", error);
-        },
-      });
-    }
 
     pwaInfo &&
       (ReloadPrompt = (await import("$lib/ReloadPrompt.svelte")).default);
@@ -58,3 +45,7 @@
     {/if}
   </div>
 </body>
+
+{#if ReloadPrompt}
+  <svelte:component this={ReloadPrompt} />
+{/if}
