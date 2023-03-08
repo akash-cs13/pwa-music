@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { writable } from "svelte/store";
+import firebaseConfig from "./FirebaseConfig";
 
 interface currentInfo{
     audio: string,
@@ -53,15 +54,7 @@ let songslist:songInfo = {
 
   let downloadUpdate: boolean = false;
   
-  const firebaseConfig = {
-    apiKey: "AIzaSyDLOcgayXHtMcmDfWwS-2YZ0EqDDUWzSy8",
-    authDomain: "pwa-music-fced1.firebaseapp.com",
-    projectId: "pwa-music-fced1",
-    storageBucket: "pwa-music-fced1.appspot.com",
-    messagingSenderId: "1008965709525",
-    appId: "1:1008965709525:web:417ad9b2e2c70122237c5c",
-    measurementId: "G-1R0SFL17XC",
-  };
+
 
 export let songs = writable(songslist);
 
