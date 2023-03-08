@@ -53,7 +53,7 @@ let songslist:songInfo = {
 
   let downloadUpdate: boolean = false;
   
-const firebaseConfig = {
+  const firebaseConfig = {
     apiKey: "AIzaSyDLOcgayXHtMcmDfWwS-2YZ0EqDDUWzSy8",
     authDomain: "pwa-music-fced1.firebaseapp.com",
     projectId: "pwa-music-fced1",
