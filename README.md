@@ -1,10 +1,15 @@
-# create-svelte
+# SVELTEIFY - A PWA Music App 🎵
+![Readme_Banner](https://user-images.githubusercontent.com/84382172/223688923-d94a605e-fe05-46d2-964d-3d1780509fad.png)
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte).
+Check it out [here](https://mymusicapp-three.vercel.app/)
 
-## Creating a project
 
-If you're seeing this, you've probably already done this step. Congrats!
+## About
+A Personal Project to mess around with Sveltekit to create a Progressive Web Application with Firebase 
+
+## How?
+
+
 
 ```bash
 # create a new project in the current directory
